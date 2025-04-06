@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sayfa başlığı ve butonlar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-leaf me-2"></i>{{ product.name }}</h1>
+        <div class="btn-group">
+            <a href="{% url 'uretim:product_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Ürün Listesine Dön
+            </a>
+            <a href="{% url 'uretim:product_update' product.id %}" class="btn btn-primary">
+                <i class="fas fa-edit me-1"></i>Düzenle
+            </a>
+            <a href="{% url 'uretim:seed_create' %}?product={{ product.id }}" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i>Tohum Ekle
+            </a>
+        </div>
+    </div>
+    
+    <!-- Mesajlar bölümü -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="row">
+        <!-- Ürün bilgileri kartı -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Ürün Bilgileri</h5>
+                </div>
+                {% if product.image %}
+                <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}" style="max-height: 300px; object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-tag me-1"></i>Ürün Adı:</strong></p>
+                        <p>{{ product.name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-sitemap me-1"></i>Tür:</strong></p>
+                        <p>{{ product.product_type }}</p>
+                    </div>
+                    {% if product.variety %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-seedling me-1"></i>Varyete/Çeşit:</strong></p>
+                        <p>{{ product.variety }}</p>
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-calendar-alt me-1"></i>Büyüme Süresi:</strong></p>
+                        <p>{{ product.growing_time }} gün</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-arrows-alt-h me-1"></i>Ekim Aralığı:</strong></p>
+                        <p>{{ product.planting_interval }} cm</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-info-circle me-1"></i>Durum:</strong></p>
+                        <p>{% if product.is_active %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-danger">Pasif</span>{% endif %}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Açıklama ve notlar kartı -->
+        <div class="col-md-8 mb-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Açıklama</h5>
+                </div>
+                <div class="card-body">
+                    {% if product.description %}
+                        <p>{{ product.description|linebreaks }}</p>
+                    {% else %}
+                        <p class="text-muted">Ürün için açıklama bulunmamaktadır.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Yetiştirme Notları</h5>
+                </div>
+                <div class="card-body">
+                    {% if product.growing_notes %}
+                        <p>{{ product.growing_notes|linebreaks }}</p>
+                    {% else %}
+                        <p class="text-muted">Ürün için yetiştirme notu bulunmamaktadır.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tohumlar kartı -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Tohumlar</h5>
+            <a href="{% url 'uretim:seed_create' %}?product={{ product.id }}" class="btn btn-sm btn-success">
+                <i class="fas fa-plus me-1"></i>Yeni Tohum Ekle
+            </a>
+        </div>
+        <div class="card-body">
+            {% if seeds %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Tohum Adı</th>
+                                <th>Üretici</th>
+                                <th>Mevcut Miktar</th>
+                                <th>Son Kullanma Tarihi</th>
+                                <th>Stok Durumu</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for seed in seeds %}
+                                <tr>
+                                    <td>{{ seed.name }}</td>
+                                    <td>{{ seed.manufacturer|default:"-" }}</td>
+                                    <td>{{ seed.quantity_on_hand }} {{ seed.unit_of_measure }}</td>
+                                    <td>{{ seed.expiry_date|default:"-" }}</td>
+                                    <td>
+                                        {% if seed.quantity_on_hand >= 10 %}
+                                            <span class="badge bg-success">Yeterli</span>
+                                        {% elif seed.quantity_on_hand > 0 %}
+                                            <span class="badge bg-warning text-dark">Az</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Stokta Yok</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'uretim:seed_detail' seed.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'uretim:seed_update' seed.id %}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <p class="mb-0">Bu ürüne bağlı tohum bulunmamaktadır.</p>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'uretim:seed_create' %}?product={{ product.id }}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Yeni Tohum Ekle
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Ekimler kartı -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Ekimler</h5>
+            <a href="{% url 'uretim:planting_create' %}?product={{ product.id }}" class="btn btn-sm btn-success">
+                <i class="fas fa-seedling me-1"></i>Yeni Ekim Yap
+            </a>
+        </div>
+        <div class="card-body">
+            {% if plantings %}
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Arazi/Parsel</th>
+                                <th>Ekim Tarihi</th>
+                                <th>Ekim Alanı</th>
+                                <th>Tahmini Hasat</th>
+                                <th>Durum</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for planting in plantings %}
+                                <tr>
+                                    <td>{{ planting.parcel.land.name }} / {{ planting.parcel.parcel_no }}</td>
+                                    <td>{{ planting.planting_date }}</td>
+                                    <td>{{ planting.area }} dönüm</td>
+                                    <td>{{ planting.estimated_harvest_date }}</td>
+                                    <td>
+                                        {% if planting.is_harvested %}
+                                            <span class="badge bg-success">Hasat Edildi</span>
+                                        {% else %}
+                                            <span class="badge bg-primary">Aktif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'uretim:planting_detail' planting.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <p class="mb-0">Bu ürüne ait ekim kaydı bulunmamaktadır.</p>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'uretim:planting_create' %}?product={{ product.id }}" class="btn btn-success">
+                        <i class="fas fa-seedling me-1"></i>Yeni Ekim Yap
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- İstatistikler kartı -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Ürün İstatistikleri</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center py-3">
+                            <h6 class="card-title">Toplam Ekim</h6>
+                            <h3 class="mb-0">{{ plantings|length }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body text-center py-3">
+                            <h6 class="card-title">Aktif Ekimler</h6>
+                            <h3 class="mb-0">{{ active_plantings_count|default:"0" }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body text-center py-3">
+                            <h6 class="card-title">Toplam Hasat</h6>
+                            <h3 class="mb-0">{{ harvest_count|default:"0" }}</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body text-center py-3">
+                            <h6 class="card-title">Tohum Stoku</h6>
+                            <h3 class="mb-0">{{ total_seed_quantity|default:"0" }} {{ seed_unit|default:"" }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

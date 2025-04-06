@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block title %}Sağlık Kaydı Ekle - {{ animal.tag_number }} | TarımHayTakip{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-heartbeat me-2"></i>Sağlık Kaydı Ekle
+                <span class="text-muted h5">{{ animal.tag_number }}</span>
+            </h1>
+            <a href="{% url 'hayvan:animal_detail' animal.pk %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Hayvana Dön
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-file-medical me-2"></i>Sağlık Kaydı Bilgileri
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="procedure_date" class="form-label">İşlem Tarihi <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="procedure_date" name="procedure_date" required>
+                            <div class="invalid-feedback">
+                                İşlem tarihi girilmelidir.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="procedure_type" class="form-label">İşlem Tipi <span class="text-danger">*</span></label>
+                            <select class="form-select" id="procedure_type" name="procedure_type" required>
+                                <option value="">Seçiniz...</option>
+                                <option value="examination">Muayene</option>
+                                <option value="vaccine">Aşı</option>
+                                <option value="treatment">Tedavi</option>
+                                <option value="surgery">Ameliyat</option>
+                                <option value="other">Diğer</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                İşlem tipi seçilmelidir.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label for="diagnosis" class="form-label">Tanı/İşlem</label>
+                            <input type="text" class="form-control" id="diagnosis" name="diagnosis">
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label for="treatment" class="form-label">Tedavi/Uygulama</label>
+                            <textarea class="form-control" id="treatment" name="treatment" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="medication" class="form-label">İlaç</label>
+                            <input type="text" class="form-control" id="medication" name="medication">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="dosage" class="form-label">Doz</label>
+                            <input type="text" class="form-control" id="dosage" name="dosage">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="veterinarian" class="form-label">Veteriner</label>
+                            <input type="text" class="form-control" id="veterinarian" name="veterinarian">
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="cost" class="form-label">Maliyet (TL)</label>
+                            <input type="number" step="0.01" class="form-control" id="cost" name="cost">
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label for="notes" class="form-label">Notlar</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">
+                            <i class="fas fa-times me-1"></i>İptal
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Sağlık Kaydını Ekle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form doğrulama için
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(function(form) {
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+    
+    // Bugünün tarihini varsayılan olarak ayarla
+    const todayDate = new Date().toISOString().split('T')[0];
+    document.getElementById('procedure_date').value = todayDate;
+});
+</script>
+{% endblock %} 

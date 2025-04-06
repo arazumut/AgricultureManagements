@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ planting.product.name }} Ekimi - {{ planting.planting_date }} - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sayfa başlığı ve butonlar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-seedling me-2"></i>{{ planting.product.name }} Ekimi</h1>
+        <div class="btn-group">
+            <a href="{% url 'uretim:planting_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Ekimlere Dön
+            </a>
+            {% if not has_harvest %}
+                <a href="{% url 'uretim:harvest_create' planting_id=planting.id %}" class="btn btn-success">
+                    <i class="fas fa-leaf me-1"></i>Hasat Ekle
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Mesajlar bölümü -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="row">
+        <!-- Ekim bilgileri kartı -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Ekim Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-leaf me-1"></i>Ürün:</strong></p>
+                        <p><a href="{% url 'uretim:product_detail' planting.product.id %}">{{ planting.product.name }}</a></p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-map-marker-alt me-1"></i>Arazi/Parsel:</strong></p>
+                        <p><a href="{% url 'arazi:parcel_detail' land_id=planting.parcel.land.id parcel_id=planting.parcel.id %}">{{ planting.parcel.land.name }} / {{ planting.parcel.parcel_no }}</a></p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-calendar-day me-1"></i>Ekim Tarihi:</strong></p>
+                        <p>{{ planting.planting_date }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-ruler-combined me-1"></i>Ekim Alanı:</strong></p>
+                        <p>{{ planting.area }} dönüm</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-calendar-check me-1"></i>Tahmini Hasat Tarihi:</strong></p>
+                        <p>{{ planting.estimated_harvest_date }}</p>
+                    </div>
+                    {% if planting.seed %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-seedling me-1"></i>Kullanılan Tohum:</strong></p>
+                        <p><a href="{% url 'uretim:seed_detail' planting.seed.id %}">{{ planting.seed.name }}</a></p>
+                    </div>
+                    {% endif %}
+                    {% if planting.planting_plan %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-clipboard-list me-1"></i>Ekim Planı:</strong></p>
+                        <p><a href="{% url 'uretim:planting_plan_detail' planting.planting_plan.id %}">{{ planting.planting_plan.planned_date }} Tarihli Plan</a></p>
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-info-circle me-1"></i>Durum:</strong></p>
+                        <p>
+                            {% if has_harvest %}
+                                <span class="badge bg-success">Hasat Edildi</span>
+                            {% else %}
+                                <span class="badge bg-primary">Aktif</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% if planting.notes %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-sticky-note me-1"></i>Notlar:</strong></p>
+                        <p>{{ planting.notes|linebreaks }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hasat bilgileri kartı -->
+        <div class="col-lg-6 mb-4">
+            {% if has_harvest %}
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">Hasat Bilgileri</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <p class="mb-1"><strong><i class="fas fa-calendar-day me-1"></i>Hasat Tarihi:</strong></p>
+                            <p>{{ harvest.harvest_date }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <p class="mb-1"><strong><i class="fas fa-weight me-1"></i>Hasat Miktarı:</strong></p>
+                            <p>{{ harvest.harvest_amount }} {{ harvest.unit_of_measure }}</p>
+                        </div>
+                        {% if harvest.yield_rate %}
+                        <div class="mb-3">
+                            <p class="mb-1"><strong><i class="fas fa-chart-line me-1"></i>Verim Oranı:</strong></p>
+                            <p>{{ harvest.yield_rate }} {{ harvest.unit_of_measure }}/dönüm</p>
+                        </div>
+                        {% endif %}
+                        {% if harvest.quality_rating %}
+                        <div class="mb-3">
+                            <p class="mb-1"><strong><i class="fas fa-star me-1"></i>Kalite Değerlendirmesi:</strong></p>
+                            <p>
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= harvest.quality_rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-muted"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                ({{ harvest.quality_rating }}/5)
+                            </p>
+                        </div>
+                        {% endif %}
+                        {% if harvest.notes %}
+                        <div class="mb-3">
+                            <p class="mb-1"><strong><i class="fas fa-sticky-note me-1"></i>Hasat Notları:</strong></p>
+                            <p>{{ harvest.notes|linebreaks }}</p>
+                        </div>
+                        {% endif %}
+                        <div class="text-center mt-4">
+                            <div class="alert alert-success">
+                                <h5 class="mb-0"><i class="fas fa-check-circle me-2"></i>Başarılı Hasat!</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">Hasat Durumu</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        {% now "Y-m-d" as current_date %}
+                        {% if planting.estimated_harvest_date|date:"Y-m-d" < current_date %}
+                            <div class="alert alert-warning">
+                                <h5 class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Tahmini Hasat Tarihi Geçmiş</h5>
+                                <p class="mb-0">Tahmini hasat tarihiniz {{ planting.estimated_harvest_date }} idi. Hasat kaydınızı eklemek için aşağıdaki butona tıklayın.</p>
+                            </div>
+                        {% elif planting.estimated_harvest_date|date:"Y-m-d" == current_date %}
+                            <div class="alert alert-info">
+                                <h5 class="mb-2"><i class="fas fa-info-circle me-2"></i>Tahmini Hasat Tarihi Bugün</h5>
+                                <p class="mb-0">Hasat zamanı geldi! Hasat bilgilerinizi kaydetmek için aşağıdaki butona tıklayın.</p>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-primary">
+                                <h5 class="mb-2"><i class="fas fa-calendar-alt me-2"></i>Hasat Zamanı Yaklaşıyor</h5>
+                                <p class="mb-0">Tahmini hasat tarihiniz: {{ planting.estimated_harvest_date }}</p>
+                            </div>
+                        {% endif %}
+                        <div class="mt-4">
+                            <a href="{% url 'uretim:harvest_create' planting_id=planting.id %}" class="btn btn-success btn-lg">
+                                <i class="fas fa-leaf me-1"></i>Hasat Bilgilerini Ekle
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Ekim takip bilgileri -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Ekim Takip Bilgileri</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card text-center">
+                        <div class="card-body py-4">
+                            <i class="fas fa-calendar-day fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title">Ekim Tarihi</h5>
+                            <p class="card-text">{{ planting.planting_date }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card text-center">
+                        <div class="card-body py-4">
+                            <i class="fas fa-clock fa-3x text-warning mb-3"></i>
+                            <h5 class="card-title">Geçen Süre</h5>
+                            <p class="card-text">
+                                {% now "Y-m-d" as current_date %}
+                                {% with days_passed=planting.planting_date|timesince:current_date %}
+                                {{ days_passed }}
+                                {% endwith %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card text-center">
+                        <div class="card-body py-4">
+                            <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                            <h5 class="card-title">Tahmini Hasat</h5>
+                            <p class="card-text">{{ planting.estimated_harvest_date }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card text-center">
+                        <div class="card-body py-4">
+                            <i class="fas fa-hourglass-half fa-3x text-danger mb-3"></i>
+                            <h5 class="card-title">Kalan Zaman</h5>
+                            <p class="card-text">
+                                {% now "Y-m-d" as current_date %}
+                                {% if planting.estimated_harvest_date|date:"Y-m-d" < current_date %}
+                                    Hasat zamanı geçti
+                                {% else %}
+                                    {% with days_left=current_date|timeuntil:planting.estimated_harvest_date %}
+                                    {{ days_left }}
+                                    {% endwith %}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

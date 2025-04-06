@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}Sürü İstatistikleri{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Başlık ve Navigasyon -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+            <i class="fas fa-chart-bar me-2"></i>Sürü İstatistikleri
+        </h1>
+        <a href="{% url 'hayvan:animal_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Hayvan Listesine Dön
+        </a>
+    </div>
+
+    <!-- Ana Sayılar -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Toplam Hayvan</h6>
+                    <p class="display-4 mb-0">{{ stats.total }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Erkek</h6>
+                    <p class="display-4 mb-0">{{ stats.males }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Dişi</h6>
+                    <p class="display-4 mb-0">{{ stats.females }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <h6 class="card-title">Gebe</h6>
+                    <p class="display-4 mb-0">{{ stats.pregnant }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ana Dağılımlar -->
+    <div class="row">
+        <!-- Türlere Göre Dağılım -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Türlere Göre Dağılım</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats.animal_types %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tür</th>
+                                        <th>Sayı</th>
+                                        <th>Oran</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for type in stats.animal_types %}
+                                    <tr>
+                                        <td>{{ type.animal_type__name }}</td>
+                                        <td>{{ type.count }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar" role="progressbar" style="width: {% widthratio type.count stats.total 100 %}%;" aria-valuenow="{% widthratio type.count stats.total 100 %}" aria-valuemin="0" aria-valuemax="100">
+                                                    {% widthratio type.count stats.total 100 %}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Henüz tür bilgisi bulunmamaktadır.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Yaş Grupları -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Yaş Grupları</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats.age_groups %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Yaş Grubu</th>
+                                        <th>Sayı</th>
+                                        <th>Oran</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for age_group, count in stats.age_groups.items %}
+                                    <tr>
+                                        <td>{{ age_group }}</td>
+                                        <td>{{ count }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-info" role="progressbar" style="width: {% widthratio count stats.total 100 %}%;" aria-valuenow="{% widthratio count stats.total 100 %}" aria-valuemin="0" aria-valuemax="100">
+                                                    {% widthratio count stats.total 100 %}%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Henüz yaş grubu bilgisi bulunmamaktadır.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Son 6 Ay Doğum İstatistikleri -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Son 6 Ay Doğum İstatistikleri</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats.recent_births.count %}
+                        <div class="row text-center">
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h3 class="display-4 mb-1">{{ stats.recent_births.count }}</h3>
+                                    <p class="text-muted mb-0">Toplam Doğum</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h3 class="display-4 mb-1">{{ stats.recent_births.total_offspring|default:"0" }}</h3>
+                                    <p class="text-muted mb-0">Toplam Yavru</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h3 class="display-4 mb-1">{{ stats.recent_births.males|default:"0" }}</h3>
+                                    <p class="text-muted mb-0">Erkek</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h3 class="display-4 mb-1">{{ stats.recent_births.females|default:"0" }}</h3>
+                                    <p class="text-muted mb-0">Dişi</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Son 6 ayda doğum kaydı bulunmamaktadır.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sağlık İstatistikleri -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Son 6 Ay Sağlık İstatistikleri</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats.health_stats.total > 0 %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2 mb-3">İşlem Dağılımı</h6>
+                                <ul class="list-group list-group-flush">
+                                    {% for type, count in stats.health_stats.by_type.items %}
+                                        <li class="list-group-item px-0">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span>
+                                                    {% if type == 'examination' %}
+                                                        <i class="fas fa-stethoscope text-info me-2"></i>Muayene
+                                                    {% elif type == 'vaccine' %}
+                                                        <i class="fas fa-syringe text-success me-2"></i>Aşı
+                                                    {% elif type == 'treatment' %}
+                                                        <i class="fas fa-capsules text-warning me-2"></i>Tedavi
+                                                    {% elif type == 'surgery' %}
+                                                        <i class="fas fa-cut text-danger me-2"></i>Ameliyat
+                                                    {% else %}
+                                                        <i class="fas fa-first-aid text-secondary me-2"></i>Diğer
+                                                    {% endif %}
+                                                </span>
+                                                <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                                            </div>
+                                            <div class="progress mt-1" style="height: 10px;">
+                                                <div class="progress-bar
+                                                    {% if type == 'examination' %}bg-info{% elif type == 'vaccine' %}bg-success{% elif type == 'treatment' %}bg-warning{% elif type == 'surgery' %}bg-danger{% else %}bg-secondary{% endif %}" 
+                                                    role="progressbar" 
+                                                    style="width: {% widthratio count stats.health_stats.total 100 %}%;" 
+                                                    aria-valuenow="{% widthratio count stats.health_stats.total 100 %}" 
+                                                    aria-valuemin="0" 
+                                                    aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="border-bottom pb-2 mb-3">Genel Bilgiler</h6>
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h3 class="display-4 mb-1">{{ stats.health_stats.total }}</h3>
+                                        <p class="text-muted mb-3">Toplam Kayıt</p>
+                                        <h3 class="mb-1">{{ stats.health_stats.total_cost|floatformat:2 }} TL</h3>
+                                        <p class="text-muted mb-0">Toplam Maliyet</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info text-center mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Son 6 ayda sağlık kaydı bulunmamaktadır.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

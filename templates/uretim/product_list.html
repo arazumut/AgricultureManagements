@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}Ürünler - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Başlık ve Navigasyon -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">
+            <i class="fas fa-seedling me-2 text-success"></i>Ürünler
+        </h1>
+        <a href="{% url 'uretim:product_create' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Yeni Ürün Ekle
+        </a>
+    </div>
+
+    <!-- Arama ve Filtreleme -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form action="{% url 'uretim:product_list' %}" method="get" class="row g-3">
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" name="search" class="form-control" placeholder="Ürün adı, tür veya çeşide göre ara..." value="{{ search_query }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">Ara</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ürünler Listesi -->
+    {% if page_obj %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for product in page_obj %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-light">
+                            <h5 class="card-title mb-0">{{ product.name }}</h5>
+                        </div>
+                        {% if product.image %}
+                            <img src="{{ product.image.url }}" class="card-img-top p-2" alt="{{ product.name }}" style="height: 180px; object-fit: contain;">
+                        {% else %}
+                            <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 180px;">
+                                <i class="fas fa-seedling fa-4x text-success"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="mb-2">
+                                {% if product.type %}
+                                    <span class="badge bg-primary">{{ product.type }}</span>
+                                {% endif %}
+                                {% if product.variety %}
+                                    <span class="badge bg-info">{{ product.variety }}</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-2 small">
+                                {% if product.growing_time %}
+                                    <div><i class="fas fa-clock me-2 text-secondary"></i>Yetişme Süresi: {{ product.growing_time }} gün</div>
+                                {% endif %}
+                                {% if product.planting_interval %}
+                                    <div><i class="fas fa-calendar-alt me-2 text-secondary"></i>Ekim Dönemi: {{ product.planting_interval }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if product.description %}
+                                <p class="card-text small">{{ product.description|truncatechars:100 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-white">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <a href="{% url 'uretim:product_detail' product.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> Detay
+                                    </a>
+                                    <a href="{% url 'uretim:seed_create_for_product' product.pk %}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-plus"></i> Tohum Ekle
+                                    </a>
+                                </div>
+                                <small class="text-muted align-self-center">{{ product.seeds.count }} tohum</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Sayfalama -->
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1&search={{ search_query }}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-double-left"></i></span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-left"></i></span>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}&search={{ search_query }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}&search={{ search_query }}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&search={{ search_query }}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-right"></i></span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link"><i class="fas fa-angle-double-right"></i></span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info my-5 text-center">
+            <i class="fas fa-info-circle fa-3x mb-3"></i>
+            <p class="mb-0">Kayıtlı ürün bulunamadı.</p>
+            {% if search_query %}
+                <p class="mt-2">Arama kriterlerinize uygun ürün bulunamadı. Lütfen farklı bir arama terimi deneyin.</p>
+                <a href="{% url 'uretim:product_list' %}" class="btn btn-outline-primary mt-2">Tüm Ürünleri Göster</a>
+            {% else %}
+                <a href="{% url 'uretim:product_create' %}" class="btn btn-success mt-3">
+                    <i class="fas fa-plus me-1"></i> Yeni Ürün Ekle
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

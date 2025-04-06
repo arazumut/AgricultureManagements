@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if animal %}Hayvanı Düzenle{% else %}Yeni Hayvan Ekle{% endif %} - TarımHayTakip
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-cow me-2"></i>
+                {% if animal %}{{ animal.tag_number }} - Hayvanı Düzenle{% else %}Yeni Hayvan Ekle{% endif %}
+            </h1>
+            <a href="{% url 'hayvan:animal_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Listeye Dön
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="mb-3">
+                                <label for="tag_number" class="form-label">Küpe Numarası <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="tag_number" name="tag_number" 
+                                       value="{{ animal.tag_number|default:'' }}" required>
+                                <div class="invalid-feedback">
+                                    Küpe numarası zorunludur.
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="animal_type" class="form-label">Hayvan Türü <span class="text-danger">*</span></label>
+                                <select class="form-select" id="animal_type" name="animal_type" required>
+                                    <option value="">Tür Seçin</option>
+                                    {% for animal_type in animal_types %}
+                                        <option value="{{ animal_type.id }}" 
+                                                {% if animal.animal_type.id == animal_type.id %}selected{% endif %}>
+                                            {{ animal_type.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    Hayvan türü seçilmelidir.
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="breed" class="form-label">Hayvan Irkı <span class="text-danger">*</span></label>
+                                <select class="form-select" id="breed" name="breed" required>
+                                    <option value="">Irk Seçin</option>
+                                    {% for breed in animal_breeds %}
+                                        <option value="{{ breed.id }}" 
+                                                {% if animal.breed.id == breed.id %}selected{% endif %}
+                                                data-animal-type="{{ breed.animal_type.id }}">
+                                            {{ breed.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    Hayvan ırkı seçilmelidir.
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Cinsiyet <span class="text-danger">*</span></label>
+                                <div class="d-flex">
+                                    <div class="form-check me-4">
+                                        <input class="form-check-input" type="radio" name="gender" id="gender_male" 
+                                               value="M" {% if animal.gender == 'M' or not animal %}checked{% endif %} required>
+                                        <label class="form-check-label" for="gender_male">
+                                            <i class="fas fa-mars text-primary me-1"></i>Erkek
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="gender" id="gender_female" 
+                                               value="F" {% if animal.gender == 'F' %}checked{% endif %} required>
+                                        <label class="form-check-label" for="gender_female">
+                                            <i class="fas fa-venus text-danger me-1"></i>Dişi
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback">
+                                    Cinsiyet seçilmelidir.
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="birth_date" class="form-label">Doğum Tarihi <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="birth_date" name="birth_date" 
+                                       value="{{ animal.birth_date|date:'Y-m-d'|default:'' }}" required>
+                                <div class="invalid-feedback">
+                                    Doğum tarihi girilmelidir.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <div class="mb-3">
+                                <label for="mother_tag_number" class="form-label">Ana Küpe Numarası</label>
+                                <input type="text" class="form-control" id="mother_tag_number" name="mother_tag_number" 
+                                       value="{{ animal.mother_tag_number|default:'' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="father_tag_number" class="form-label">Baba Küpe Numarası</label>
+                                <input type="text" class="form-control" id="father_tag_number" name="father_tag_number" 
+                                       value="{{ animal.father_tag_number|default:'' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="arrival_date" class="form-label">Geliş Tarihi</label>
+                                <input type="date" class="form-control" id="arrival_date" name="arrival_date" 
+                                       value="{{ animal.arrival_date|date:'Y-m-d'|default:'' }}">
+                                <div class="form-text">
+                                    Hayvan işletmeye dışarıdan geldiyse, geliş tarihini belirtin.
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="source" class="form-label">Kaynak</label>
+                                <input type="text" class="form-control" id="source" name="source" 
+                                       value="{{ animal.source|default:'' }}">
+                                <div class="form-text">
+                                    Hayvanın nereden geldiğini belirtin. (Örn: Doğum, Satın alma, vb.)
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="weight" class="form-label">Ağırlık (kg)</label>
+                                <input type="number" step="0.01" class="form-control" id="weight" name="weight" 
+                                       value="{{ animal.weight|default:'' }}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-4">
+                            <div class="mb-3">
+                                <label for="purchase_price" class="form-label">Satın Alma Fiyatı (TL)</label>
+                                <input type="number" step="0.01" class="form-control" id="purchase_price" name="purchase_price" 
+                                       value="{{ animal.purchase_price|default:'' }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="image" class="form-label">Fotoğraf</label>
+                                <input type="file" class="form-control" id="image" name="image">
+                                {% if animal.image %}
+                                    <div class="mt-2">
+                                        <img src="{{ animal.image.url }}" alt="{{ animal.tag_number }}" 
+                                             class="img-thumbnail" style="max-height: 150px;">
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="notes" class="form-label">Notlar</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="5">{{ animal.notes|default:'' }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if animal %}Değişiklikleri Kaydet{% else %}Hayvanı Ekle{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form doğrulama
+        const forms = document.querySelectorAll('.needs-validation');
+        
+        Array.from(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+        
+        // Irk filtreleme
+        const animalTypeSelect = document.getElementById('animal_type');
+        const breedSelect = document.getElementById('breed');
+        const breedOptions = Array.from(breedSelect.options);
+        
+        function filterBreeds() {
+            const selectedTypeId = animalTypeSelect.value;
+            
+            // Tüm ırkları temizle
+            breedSelect.innerHTML = '';
+            
+            // Boş seçenek ekle
+            const emptyOption = document.createElement('option');
+            emptyOption.value = '';
+            emptyOption.textContent = 'Irk Seçin';
+            breedSelect.appendChild(emptyOption);
+            
+            // Seçilen türe ait ırkları filtrele ve ekle
+            breedOptions.forEach(function(option) {
+                if (option.value === '' || option.dataset.animalType === selectedTypeId) {
+                    breedSelect.appendChild(option.cloneNode(true));
+                }
+            });
+        }
+        
+        animalTypeSelect.addEventListener('change', filterBreeds);
+        
+        // Sayfa yüklendiğinde filtreleme uygula
+        if (animalTypeSelect.value) {
+            filterBreeds();
+        }
+    });
+</script>
+{% endblock %} 

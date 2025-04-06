@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block title %}Hasatlar - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sayfa başlığı ve butonlar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-leaf me-2"></i>Hasatlar</h1>
+        <div class="btn-group">
+            <a href="{% url 'uretim:planting_list' %}" class="btn btn-secondary">
+                <i class="fas fa-seedling me-1"></i>Ekimlere Git
+            </a>
+        </div>
+    </div>
+    
+    <!-- Mesajlar bölümü -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <!-- Arama ve filtreleme formu -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="product" class="form-label">Ürün</label>
+                    <input type="text" class="form-control" id="product" name="product" placeholder="Ürün adı" value="{{ request.GET.product }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="land" class="form-label">Arazi</label>
+                    <input type="text" class="form-control" id="land" name="land" placeholder="Arazi adı" value="{{ request.GET.land }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="date_range" class="form-label">Hasat Tarihi Aralığı</label>
+                    <input type="text" class="form-control" id="date_range" name="date_range" placeholder="YYYY-MM-DD - YYYY-MM-DD" value="{{ request.GET.date_range }}">
+                </div>
+                <div class="col-md-12 text-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>Ara
+                    </button>
+                    <a href="{% url 'uretim:harvest_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-redo me-1"></i>Sıfırla
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Hasat listesi -->
+    {% if harvests %}
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Hasat Listesi</h5>
+                <span class="badge bg-primary">{{ page_obj.paginator.count }} Sonuç</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ürün</th>
+                                <th>Arazi/Parsel</th>
+                                <th>Hasat Tarihi</th>
+                                <th>Miktar</th>
+                                <th>Verim</th>
+                                <th>Kalite</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for harvest in harvests %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'uretim:product_detail' harvest.planting.product.id %}">
+                                            {{ harvest.planting.product.name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'arazi:parcel_detail' land_id=harvest.planting.parcel.land.id parcel_id=harvest.planting.parcel.id %}">
+                                            {{ harvest.planting.parcel.land.name }} / {{ harvest.planting.parcel.parcel_no }}
+                                        </a>
+                                    </td>
+                                    <td>{{ harvest.harvest_date }}</td>
+                                    <td>{{ harvest.harvest_amount }} {{ harvest.unit_of_measure }}</td>
+                                    <td>
+                                        {% if harvest.yield_rate %}
+                                            {{ harvest.yield_rate }} {{ harvest.unit_of_measure }}/dönüm
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if harvest.quality_rating %}
+                                            <div class="d-flex">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= harvest.quality_rating %}
+                                                        <i class="fas fa-star text-warning small me-1"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star text-muted small me-1"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'uretim:planting_detail' harvest.planting.id %}" class="btn btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if harvest.harvest_image %}
+                                                <a href="{{ harvest.harvest_image.url }}" class="btn btn-outline-info" target="_blank">
+                                                    <i class="fas fa-image"></i>
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sayfalama -->
+        {% if page_obj.has_other_pages %}
+            <nav>
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.product %}product={{ request.GET.product }}&{% endif %}{% if request.GET.land %}land={{ request.GET.land }}&{% endif %}{% if request.GET.date_range %}date_range={{ request.GET.date_range }}&{% endif %}page=1">İlk</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.product %}product={{ request.GET.product }}&{% endif %}{% if request.GET.land %}land={{ request.GET.land }}&{% endif %}{% if request.GET.date_range %}date_range={{ request.GET.date_range }}&{% endif %}page={{ page_obj.previous_page_number }}">Önceki</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">İlk</a>
+                        </li>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">Önceki</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for i in page_obj.paginator.page_range %}
+                        {% if page_obj.number == i %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ i }}</span>
+                            </li>
+                        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if request.GET.product %}product={{ request.GET.product }}&{% endif %}{% if request.GET.land %}land={{ request.GET.land }}&{% endif %}{% if request.GET.date_range %}date_range={{ request.GET.date_range }}&{% endif %}page={{ i }}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.product %}product={{ request.GET.product }}&{% endif %}{% if request.GET.land %}land={{ request.GET.land }}&{% endif %}{% if request.GET.date_range %}date_range={{ request.GET.date_range }}&{% endif %}page={{ page_obj.next_page_number }}">Sonraki</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if request.GET.product %}product={{ request.GET.product }}&{% endif %}{% if request.GET.land %}land={{ request.GET.land }}&{% endif %}{% if request.GET.date_range %}date_range={{ request.GET.date_range }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Son</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">Sonraki</a>
+                        </li>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#">Son</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="alert alert-info text-center">
+            <h4 class="alert-heading mb-3"><i class="fas fa-info-circle me-2"></i>Henüz hasat kaydı bulunmuyor</h4>
+            <p>Hasat bilgileri görmek için önce bir ekim yapmanız ve hasadını kaydetmeniz gerekiyor.</p>
+            <hr>
+            <div class="mt-3">
+                <a href="{% url 'uretim:planting_list' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-seedling me-1"></i>Ekimlere Git
+                </a>
+                {% if search_query %}
+                    <a href="{% url 'uretim:harvest_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-redo me-1"></i>Aramaları Temizle
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- İstatistikler -->
+    {% if harvest_stats %}
+        <div class="row mt-4 mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100 shadow-sm">
+                    <div class="card-body">
+                        <i class="fas fa-balance-scale fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title">Toplam Hasat Miktarı</h5>
+                        <p class="card-text fs-4">{{ harvest_stats.total_amount }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100 shadow-sm">
+                    <div class="card-body">
+                        <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">Son Hasat</h5>
+                        <p class="card-text fs-4">{{ harvest_stats.latest_harvest_date }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100 shadow-sm">
+                    <div class="card-body">
+                        <i class="fas fa-chart-line fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title">Ortalama Verim</h5>
+                        <p class="card-text fs-4">{{ harvest_stats.avg_yield_rate }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card text-center h-100 shadow-sm">
+                    <div class="card-body">
+                        <i class="fas fa-star fa-3x text-danger mb-3"></i>
+                        <h5 class="card-title">Ortalama Kalite</h5>
+                        <p class="card-text fs-4">{{ harvest_stats.avg_quality_rating }}/5</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Tarih aralığı seçici için buraya kod eklenebilir
+    });
+</script>
+{% endblock %} 

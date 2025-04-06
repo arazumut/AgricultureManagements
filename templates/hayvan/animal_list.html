@@ -1,0 +1,271 @@
+{% extends 'base.html' %}
+
+{% block title %}Hayvanlar{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Başlık ve Yeni Ekle Butonu -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0"><i class="fas fa-paw me-2"></i>Hayvanlarım</h1>
+        <a href="{% url 'hayvan:animal_create' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Yeni Hayvan Ekle
+        </a>
+    </div>
+    
+    <!-- Mesajlar -->
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Arama, Sıralama ve Filtre Seçenekleri -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <!-- Arama -->
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Küpe No, Irk veya Tür ara..." value="{{ search_query }}">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Ara
+                        </button>
+                        {% if search_query or selected_type or selected_sort != '-created_at' %}
+                        <a href="{% url 'hayvan:animal_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times"></i> Temizle
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Filtreler ve Sıralama -->
+                <div class="col-md-3">
+                    <select name="type" class="form-select">
+                        <option value="">Tüm Türler</option>
+                        {% for animal_type in animal_types %}
+                        <option value="{{ animal_type.id }}" {% if selected_type == animal_type.id|stringformat:"i" %}selected{% endif %}>
+                            {{ animal_type.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-3">
+                    <select name="sort" class="form-select">
+                        <option value="-created_at" {% if selected_sort == '-created_at' %}selected{% endif %}>En Yeni</option>
+                        <option value="tag_number" {% if selected_sort == 'tag_number' %}selected{% endif %}>Küpe No</option>
+                        <option value="oldest" {% if selected_sort == 'oldest' %}selected{% endif %}>En Yaşlı</option>
+                        <option value="youngest" {% if selected_sort == 'youngest' %}selected{% endif %}>En Genç</option>
+                        <option value="gender" {% if selected_sort == 'gender' %}selected{% endif %}>Cinsiyet</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Hayvan Kart Görünümü -->
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+        {% for animal in page_obj %}
+        <div class="col">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        {% if animal.gender == 'M' %}
+                        <i class="fas fa-mars text-primary"></i>
+                        {% else %}
+                        <i class="fas fa-venus text-danger"></i>
+                        {% endif %}
+                        {{ animal.tag_number }}
+                    </h5>
+                    <span class="badge {% if animal.gender == 'M' %}bg-primary{% else %}bg-danger{% endif %}">
+                        {{ animal.get_gender_display }}
+                    </span>
+                </div>
+                
+                <div class="card-body">
+                    <div class="d-flex mb-3">
+                        <div class="flex-shrink-0 me-3">
+                            {% if animal.image %}
+                            <img src="{{ animal.image.url }}" alt="{{ animal.tag_number }}" class="rounded" style="width: 80px; height: 80px; object-fit: cover;">
+                            {% else %}
+                            <div class="rounded bg-light d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                <i class="fas {% if animal.gender == 'M' %}fa-mars{% else %}fa-venus{% endif %} fa-2x text-secondary"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <p class="mb-1">
+                                <span class="fw-bold">Tür:</span> {{ animal.animal_type }}
+                            </p>
+                            <p class="mb-1">
+                                <span class="fw-bold">Irk:</span> {{ animal.breed }}
+                            </p>
+                            <p class="mb-1">
+                                <span class="fw-bold">Yaş:</span> {{ animal.get_age }}
+                            </p>
+                            <p class="mb-0">
+                                <span class="fw-bold">Durum:</span> 
+                                <span class="badge {% if animal.get_status == 'Aktif' %}bg-success{% elif animal.get_status == 'Gebe' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ animal.get_status }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-white">
+                    <a href="{% url 'hayvan:animal_detail' animal.pk %}" class="btn btn-primary btn-sm w-100">
+                        <i class="fas fa-eye"></i> Detaylar
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {% if search_query %}
+                    "{{ search_query }}" aramasına uygun kayıt bulunamadı.
+                {% else %}
+                    Kayıtlı hayvan bulunmamaktadır.
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Tablo Görünümü -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Hayvan Listesi</h5>
+        </div>
+        <div class="card-body p-0">
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Küpe No</th>
+                            <th>Tür</th>
+                            <th>Irk</th>
+                            <th>Cinsiyet</th>
+                            <th>Doğum Tarihi</th>
+                            <th>Yaş</th>
+                            <th>Durum</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for animal in page_obj %}
+                        <tr>
+                            <td class="align-middle">{{ animal.tag_number }}</td>
+                            <td class="align-middle">{{ animal.animal_type }}</td>
+                            <td class="align-middle">{{ animal.breed }}</td>
+                            <td class="align-middle">
+                                {% if animal.gender == 'M' %}
+                                <i class="fas fa-mars text-primary"></i>
+                                {% else %}
+                                <i class="fas fa-venus text-danger"></i>
+                                {% endif %}
+                                {{ animal.get_gender_display }}
+                            </td>
+                            <td class="align-middle">{{ animal.birth_date }}</td>
+                            <td class="align-middle">{{ animal.get_age }}</td>
+                            <td class="align-middle">
+                                <span class="badge {% if animal.get_status == 'Aktif' %}bg-success{% elif animal.get_status == 'Gebe' %}bg-info{% else %}bg-secondary{% endif %}">
+                                    {{ animal.get_status }}
+                                </span>
+                            </td>
+                            <td class="align-middle">
+                                <a href="{% url 'hayvan:animal_detail' animal.pk %}" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'hayvan:animal_update' animal.pk %}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'hayvan:animal_delete' animal.pk %}" class="btn btn-danger btn-sm">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Sayfalama -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <a class="page-link" href="#">{{ num }}</a>
+                </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_type %}&type={{ selected_type }}{% endif %}{% if selected_sort %}&sort={{ selected_sort }}{% endif %}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+            {% else %}
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %} 

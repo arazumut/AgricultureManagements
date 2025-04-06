@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if parcel %}Parsel Düzenle{% else %}Yeni Parsel Ekle{% endif %} - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sayfa başlığı -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            {% if parcel %}
+                <i class="fas fa-edit me-2"></i>Parsel Düzenle
+            {% else %}
+                <i class="fas fa-plus-circle me-2"></i>{{ land.name }} - Yeni Parsel Ekle
+            {% endif %}
+        </h1>
+        <div>
+            <a href="{% url 'arazi:land_detail' land.id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Arazi Detayına Dön
+            </a>
+        </div>
+    </div>
+
+    <!-- Mesajlar bölümü -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Form kartı -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Parsel Bilgileri</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <!-- Parsel No -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.parcel_no.id_for_label }}" class="form-label">{{ form.parcel_no.label }}</label>
+                            {{ form.parcel_no }}
+                            {% if form.parcel_no.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.parcel_no.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.parcel_no.help_text }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Alan -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.area.id_for_label }}" class="form-label">{{ form.area.label }}</label>
+                            {{ form.area }}
+                            {% if form.area.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.area.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.area.help_text }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <!-- Toprak türü -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.soil_type.id_for_label }}" class="form-label">{{ form.soil_type.label }}</label>
+                            {{ form.soil_type }}
+                            {% if form.soil_type.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.soil_type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.soil_type.help_text }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sulama durumu -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.has_irrigation.id_for_label }}" class="form-label">{{ form.has_irrigation.label }}</label>
+                            <div>
+                                {{ form.has_irrigation }}
+                                <label class="form-check-label" for="{{ form.has_irrigation.id_for_label }}">
+                                    Sulama Var
+                                </label>
+                            </div>
+                            {% if form.has_irrigation.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.has_irrigation.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.has_irrigation.help_text }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Koordinatlar -->
+                <div class="form-group mb-3">
+                    <label for="{{ form.coordinates.id_for_label }}" class="form-label">{{ form.coordinates.label }}</label>
+                    {{ form.coordinates }}
+                    {% if form.coordinates.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.coordinates.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">{{ form.coordinates.help_text }}</div>
+                </div>
+                
+                <!-- Açıklama -->
+                <div class="form-group mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.description.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">{{ form.description.help_text }}</div>
+                </div>
+                
+                <!-- Aktif durumu -->
+                <div class="form-group mb-3">
+                    <div>
+                        {{ form.is_active }}
+                        <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                            {{ form.is_active.label }}
+                        </label>
+                    </div>
+                    {% if form.is_active.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.is_active.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">{{ form.is_active.help_text }}</div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <a href="{% url 'arazi:land_detail' land.id %}" class="btn btn-light me-md-2">
+                        <i class="fas fa-times me-1"></i>İptal
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>
+                        {% if parcel %}Güncelle{% else %}Kaydet{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form alanlarına Bootstrap sınıflarını ekle
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('select').forEach(function(el) {
+            el.classList.add('form-select');
+        });
+        
+        document.querySelectorAll('input[type="text"], input[type="number"]').forEach(function(el) {
+            el.classList.add('form-control');
+        });
+        
+        document.querySelectorAll('textarea').forEach(function(el) {
+            el.classList.add('form-control');
+        });
+        
+        document.querySelectorAll('input[type="checkbox"]').forEach(function(el) {
+            el.classList.add('form-check-input');
+        });
+        
+        // Hata olan input'ları işaretle
+        document.querySelectorAll('.invalid-feedback').forEach(function(el) {
+            el.previousElementSibling.classList.add('is-invalid');
+        });
+    });
+</script>
+{% endblock %} 

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tarım ve Hayvancılık Takip Sistemi{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Özel CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="/">
+                    <i class="fas fa-leaf me-2"></i>Tarım ve Hayvancılık Takip Sistemi
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-tractor me-1"></i>Arazi
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'arazi:land_list' %}">Arazilerim</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'arazi:land_create' %}">Yeni Arazi Ekle</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Toprak Analizleri</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:arazi_soilanalysis_changelist' %}">Analizler</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-seedling me-1"></i>Üretim
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'uretim:product_list' %}">Ürünler</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'uretim:planting_plan_list' %}">Ekim Planları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'uretim:planting_list' %}">Ekimler</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'uretim:harvest_list' %}">Hasat Kayıtları</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Yeni Ekle</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'uretim:product_create' %}">Yeni Ürün</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'uretim:planting_plan_create' %}">Yeni Ekim Planı</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'uretim:planting_create' %}">Yeni Ekim</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-cow me-1"></i>Hayvan
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'hayvan:animal_list' %}">Hayvan Listesi</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'hayvan:animal_create' %}">Yeni Hayvan Ekle</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Temel Kayıtlar</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:hayvan_animaltype_changelist' %}">Hayvan Türleri</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:hayvan_animalbreed_changelist' %}">Hayvan Irkları</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Diğer İşlemler</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:hayvan_healthrecord_changelist' %}">Sağlık Kayıtları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:hayvan_reproductionrecord_changelist' %}">Üreme Kayıtları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:hayvan_birth_changelist' %}">Doğum Kayıtları</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-boxes me-1"></i>Stok
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'admin:stok_inventoryitem_changelist' %}">Stok Kalemleri</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:stok_stocktransaction_changelist' %}">Stok Hareketleri</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Temel Kayıtlar</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:stok_category_changelist' %}">Kategoriler</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:stok_unitofmeasure_changelist' %}">Ölçü Birimleri</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:stok_supplier_changelist' %}">Tedarikçiler</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Depo Yönetimi</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:stok_warehouse_changelist' %}">Depolar</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:stok_inventorylocation_changelist' %}">Stok Konumları</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-chart-line me-1"></i>Finans
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'admin:finans_transaction_changelist' %}">Gelir/Gider İşlemleri</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:finans_invoice_changelist' %}">Faturalar</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Hesap Yönetimi</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:finans_bankaccount_changelist' %}">Banka Hesapları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:finans_accountcategory_changelist' %}">Hesap Kategorileri</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:finans_customer_changelist' %}">Müşteriler</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Bütçe</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:finans_budget_changelist' %}">Bütçe Planları</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-tasks me-1"></i>Görevler
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="{% url 'admin:gorev_task_changelist' %}">Tüm Görevler</a></li>
+                                    <li><a class="dropdown-item" href="#">Görev Takvimi</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Ekip Yönetimi</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:gorev_worker_changelist' %}">Çalışanlar</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:gorev_worklog_changelist' %}">Çalışma Kayıtları</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">Ekipman</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:gorev_equipment_changelist' %}">Ekipmanlar</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:gorev_maintenanceschedule_changelist' %}">Bakım Programları</a></li>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">
+                                    <i class="fas fa-chart-pie me-1"></i>Analitik
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                    <ul class="navbar-nav">
+                        {% if user.is_authenticated %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle me-1"></i>{{ user.username }}
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profilim</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="fas fa-cog me-2"></i>Yönetim Paneli</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Çıkış</a></li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'login' %}"><i class="fas fa-sign-in-alt me-1"></i>Giriş</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'register' %}"><i class="fas fa-user-plus me-1"></i>Kayıt</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container py-4">
+        {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-dark text-light py-4 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-leaf me-2"></i>Tarım ve Hayvancılık Takip Sistemi</h5>
+                    <p>Çiftçilerimiz ve hayvancılarımız için modern, kullanıcı dostu tarım ve hayvancılık takip sistemi.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Hızlı Erişim</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'home' %}" class="text-light"><i class="fas fa-angle-right me-1"></i>Ana Sayfa</a></li>
+                        <li><a href="{% url 'hayvan:animal_list' %}" class="text-light"><i class="fas fa-angle-right me-1"></i>Hayvanlar</a></li>
+                        <li><a href="{% url 'arazi:land_list' %}" class="text-light"><i class="fas fa-angle-right me-1"></i>Araziler</a></li>
+                        <li><a href="{% url 'profile' %}" class="text-light"><i class="fas fa-angle-right me-1"></i>Profilim</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>İletişim</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-envelope me-2"></i>info@tarimhaytakip.com</li>
+                        <li><i class="fas fa-phone me-2"></i>+90 (555) 123 4567</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">&copy; {% now "Y" %} Tarım ve Hayvancılık Takip Sistemi(K. Umut Araz). Tüm hakları saklıdır.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Özel JS -->
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html> 

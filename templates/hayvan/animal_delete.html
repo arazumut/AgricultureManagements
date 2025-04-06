@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Hayvan Sil - TarımHayTakip{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Hayvan Kaydını Sil</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    {% if animal.image %}
+                        <img src="{{ animal.image.url }}" alt="{{ animal.tag_number }}" class="img-fluid rounded" style="max-height: 150px;">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center mx-auto rounded mb-3" style="width: 150px; height: 150px;">
+                            <i class="fas fa-cow fa-4x text-secondary"></i>
+                        </div>
+                    {% endif %}
+                    <h4 class="mt-3">{{ animal.tag_number }}</h4>
+                    <p class="text-muted">{{ animal.animal_type.name }} - {{ animal.breed.name }}</p>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Bu kayıt silinecek!</strong> Hayvan kaydını silmek üzeresiniz. Bu işlem geri alınamaz.
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="confirm" value="yes" id="confirmDelete" required>
+                            <label class="form-check-label" for="confirmDelete">
+                                Evet, <strong>{{ animal.tag_number }}</strong> numaralı hayvan kaydını silmek istediğimi onaylıyorum.
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'hayvan:animal_detail' animal.pk %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left me-1"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Sil
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

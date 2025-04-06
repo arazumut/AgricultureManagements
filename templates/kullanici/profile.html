@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Profilim - TarımHayTakip{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-user-circle me-2"></i>Profil Bilgilerim</h4>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-4 text-center">
+                            <div class="mb-3">
+                                {% if profile.profile_image %}
+                                    <img src="{{ profile.profile_image.url }}" alt="Profil Fotoğrafı" class="img-fluid rounded-circle" style="width: 200px; height: 200px; object-fit: cover;">
+                                {% else %}
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto" style="width: 200px; height: 200px;">
+                                        <i class="fas fa-user fa-5x text-secondary"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="mb-3">
+                                <label for="profile_image" class="form-label">Profil Fotoğrafı</label>
+                                <input type="file" class="form-control" id="profile_image" name="profile_image">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="first_name" class="form-label">Ad</label>
+                                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="last_name" class="form-label">Soyad</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Kullanıcı Adı</label>
+                                <input type="text" class="form-control" id="username" value="{{ user.username }}" disabled>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label">E-posta Adresi</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Telefon Numarası</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" value="{{ profile.phone|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="company_name" class="form-label">İşletme Adı</label>
+                            <input type="text" class="form-control" id="company_name" name="company_name" value="{{ profile.company_name|default:'' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="tax_number" class="form-label">Vergi Numarası</label>
+                            <input type="text" class="form-control" id="tax_number" name="tax_number" value="{{ profile.tax_number|default:'' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Adres</label>
+                        <textarea class="form-control" id="address" name="address" rows="3">{{ profile.address|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="city" class="form-label">İl</label>
+                        <input type="text" class="form-control" id="city" name="city" value="{{ profile.city|default:'' }}">
+                    </div>
+                    
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Değişiklikleri Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Güvenlik Ayarları</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Şifrenizi değiştirmek veya hesap güvenlik ayarlarınızı güncellemek için aşağıdaki düğmeyi kullanın.</p>
+                <a href="#" class="btn btn-outline-info">
+                    <i class="fas fa-key me-2"></i>Şifremi Değiştir
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Tercihler</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Bildirim Ayarları</label>
+                    <div class="form-check form-switch mb-2">
+                        <input class="form-check-input" type="checkbox" id="email_notifications" checked>
+                        <label class="form-check-label" for="email_notifications">E-posta Bildirimleri</label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="sms_notifications">
+                        <label class="form-check-label" for="sms_notifications">SMS Bildirimleri</label>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="language" class="form-label">Dil</label>
+                    <select class="form-select" id="language">
+                        <option value="tr" selected>Türkçe</option>
+                        <option value="en">English</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-outline-secondary">
+                    <i class="fas fa-save me-2"></i>Tercihleri Kaydet
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

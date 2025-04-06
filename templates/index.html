@@ -1,0 +1,423 @@
+{% extends 'base.html' %}
+
+{% block title %}Ana Sayfa - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    {% if user.is_authenticated %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card bg-light border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h2 class="mb-3"><i class="fas fa-tachometer-alt me-2"></i>Kontrol Paneli</h2>
+                        <div class="row g-4">
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card bg-primary text-white h-100">
+                                    <div class="card-body d-flex align-items-center">
+                                        <i class="fas fa-tractor fa-3x me-3"></i>
+                                        <div>
+                                            <h6 class="card-title mb-0">Araziler</h6>
+                                            <p class="display-6 mb-0">{{ land_count|default:"0" }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-primary-dark text-center">
+                                        <a href="{% url 'arazi:land_list' %}" class="text-white text-decoration-none">Detaylar <i class="fas fa-arrow-right ms-1"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card bg-success text-white h-100">
+                                    <div class="card-body d-flex align-items-center">
+                                        <i class="fas fa-cow fa-3x me-3"></i>
+                                        <div>
+                                            <h6 class="card-title mb-0">Hayvanlar</h6>
+                                            <p class="display-6 mb-0">{{ animal_count|default:"0" }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-success-dark text-center">
+                                        <a href="{% url 'hayvan:animal_list' %}" class="text-white text-decoration-none">Detaylar <i class="fas fa-arrow-right ms-1"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card bg-info text-white h-100">
+                                    <div class="card-body d-flex align-items-center">
+                                        <i class="fas fa-boxes fa-3x me-3"></i>
+                                        <div>
+                                            <h6 class="card-title mb-0">Stok</h6>
+                                            <p class="display-6 mb-0">{{ stock_count|default:"0" }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-info-dark text-center">
+                                        <a href="{% url 'admin:stok_inventoryitem_changelist' %}" class="text-white text-decoration-none">Detaylar <i class="fas fa-arrow-right ms-1"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <div class="card bg-warning text-dark h-100">
+                                    <div class="card-body d-flex align-items-center">
+                                        <i class="fas fa-tasks fa-3x me-3"></i>
+                                        <div>
+                                            <h6 class="card-title mb-0">Görevler</h6>
+                                            <p class="display-6 mb-0">{{ task_count|default:"0" }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-warning-dark text-center">
+                                        <a href="{% url 'admin:gorev_task_changelist' %}" class="text-dark text-decoration-none">Detaylar <i class="fas fa-arrow-right ms-1"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ekimler ve Planlamalar -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-seedling me-2"></i>Aktif Ekimler</h5>
+                            <a href="{% url 'uretim:planting_list' %}" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if active_plantings %}
+                            <div class="list-group list-group-flush">
+                                {% for planting in active_plantings %}
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 me-3">
+                                            <div class="p-2 rounded-circle bg-success text-white">
+                                                <i class="fas fa-seedling"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">{{ planting.product.name }}</h6>
+                                            <p class="text-muted small mb-0">{{ planting.parcel.land.name }} - Parsel {{ planting.parcel.parcel_no }}</p>
+                                            <p class="mb-0">
+                                                <span class="badge bg-primary">{{ planting.planting_date }}</span>
+                                                <span class="badge bg-success">{{ planting.planting_area }} dönüm</span>
+                                            </p>
+                                        </div>
+                                        <a href="{% url 'uretim:planting_detail' planting.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center py-4">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p class="mb-0">Aktif ekim bulunmuyor.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Ekim Planları</h5>
+                            <a href="{% url 'uretim:planting_plan_list' %}" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if upcoming_plans %}
+                            <div class="list-group list-group-flush">
+                                {% for plan in upcoming_plans %}
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 me-3">
+                                            <div class="p-2 rounded-circle bg-info text-white">
+                                                <i class="fas fa-calendar-alt"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-0">{{ plan.product.name }}</h6>
+                                            <p class="text-muted small mb-0">{{ plan.parcel.land.name }} - Parsel {{ plan.parcel.parcel_no }}</p>
+                                            <p class="mb-0">
+                                                <span class="badge bg-primary">Planlanan Ekim: {{ plan.planned_planting_date }}</span>
+                                                {% if not plan.is_completed %}
+                                                    <a href="{% url 'uretim:planting_create_from_plan' plan.id %}" class="badge bg-success text-decoration-none">Ekim Oluştur</a>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Tamamlandı</span>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center py-4">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p class="mb-0">Yaklaşan ekim planı bulunmuyor.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Yaklaşan Görevler ve Sağlık İşlemleri -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Yaklaşan Sağlık İşlemleri</h5>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if upcoming_health_procedures %}
+                            <div class="list-group list-group-flush">
+                                {% for procedure in upcoming_health_procedures %}
+                                    <div class="list-group-item px-0">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="p-2 rounded-circle 
+                                                    {% if procedure.procedure_type == 'examination' %}bg-info{% elif procedure.procedure_type == 'vaccine' %}bg-success{% elif procedure.procedure_type == 'treatment' %}bg-warning{% elif procedure.procedure_type == 'surgery' %}bg-danger{% else %}bg-secondary{% endif %} 
+                                                    text-white">
+                                                    <i class="fas 
+                                                        {% if procedure.procedure_type == 'examination' %}fa-stethoscope{% elif procedure.procedure_type == 'vaccine' %}fa-syringe{% elif procedure.procedure_type == 'treatment' %}fa-capsules{% elif procedure.procedure_type == 'surgery' %}fa-cut{% else %}fa-first-aid{% endif %}"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">{{ procedure.get_procedure_type_display }}</h6>
+                                                <p class="text-muted small mb-0">{{ procedure.animal.tag_number }} - {{ procedure.procedure_date }}</p>
+                                                {% if procedure.diagnosis %}
+                                                    <p class="mb-0">{{ procedure.diagnosis }}</p>
+                                                {% endif %}
+                                            </div>
+                                            <a href="{% url 'hayvan:animal_detail' procedure.animal.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center py-4">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p class="mb-0">Önümüzdeki günlerde planlanmış sağlık işlemi bulunmuyor.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-baby me-2"></i>Yaklaşan Doğumlar</h5>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if upcoming_births %}
+                            <div class="list-group list-group-flush">
+                                {% for record in upcoming_births %}
+                                    <div class="list-group-item px-0">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="p-2 rounded-circle bg-info text-white">
+                                                    <i class="fas fa-venus"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">{{ record.animal.tag_number }}{% if record.animal.name %} - {{ record.animal.name }}{% endif %}</h6>
+                                                <p class="text-muted small mb-0">Tahmini Doğum: {{ record.expected_birth_date }}</p>
+                                                <p class="mb-0">
+                                                    <span class="badge bg-info">Gebe</span>
+                                                    <span class="badge bg-secondary">{{ record.get_insemination_type_display }}</span>
+                                                </p>
+                                            </div>
+                                            <a href="{% url 'hayvan:animal_detail' record.animal.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center py-4">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p class="mb-0">Yaklaşan doğum bulunmuyor.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Son Doğumlar ve Gebe Hayvanlar -->
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-birthday-cake me-2"></i>Son Doğumlar</h5>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if recent_births %}
+                            <div class="list-group list-group-flush">
+                                {% for birth in recent_births %}
+                                    <div class="list-group-item px-0">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="p-2 rounded-circle bg-success text-white">
+                                                    <i class="fas fa-baby"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">{{ birth.animal.tag_number }}{% if birth.animal.name %} - {{ birth.animal.name }}{% endif %}</h6>
+                                                <p class="text-muted small mb-0">Doğum Tarihi: {{ birth.birth_date }}</p>
+                                                <p class="mb-0">
+                                                    <span class="badge bg-primary">{{ birth.offspring_count }} Yavru</span>
+                                                    <span class="badge bg-info">{{ birth.male_count }} Erkek</span>
+                                                    <span class="badge bg-danger">{{ birth.female_count }} Dişi</span>
+                                                    {% if birth.stillborn_count > 0 %}
+                                                        <span class="badge bg-secondary">{{ birth.stillborn_count }} Ölü Doğum</span>
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                            <a href="{% url 'hayvan:animal_detail' birth.animal.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center py-4">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p class="mb-0">Henüz kaydedilmiş doğum bulunmuyor.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0"><i class="fas fa-venus me-2"></i>Gebe Hayvanlar</h5>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Tümünü Gör</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if pregnant_animals %}
+                            <div class="list-group list-group-flush">
+                                {% for animal in pregnant_animals %}
+                                    <div class="list-group-item px-0">
+                                        <div class="d-flex align-items-center">
+                                            <div class="flex-shrink-0 me-3">
+                                                <div class="p-2 rounded-circle bg-info text-white">
+                                                    <i class="fas fa-venus"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-0">{{ animal.tag_number }}{% if animal.name %} - {{ animal.name }}{% endif %}</h6>
+                                                <p class="text-muted small mb-0">{{ animal.breed.name }}</p>
+                                                <p class="mb-0">
+                                                    <span class="badge bg-info">Gebe</span>
+                                                    {% with latest_record=animal.reproduction_records.filter.first %}
+                                                        {% if latest_record.expected_birth_date %}
+                                                            <span class="badge bg-secondary">
+                                                                Tahmini Doğum: {{ latest_record.expected_birth_date }}
+                                                            </span>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                </p>
+                                            </div>
+                                            <a href="{% url 'hayvan:animal_detail' animal.id %}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info text-center py-4">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p class="mb-0">Gebe hayvan bulunmuyor.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Giriş yapmamış kullanıcılar için ana sayfa içeriği -->
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="jumbotron py-5 px-4 bg-light rounded-3 text-center">
+                    <h1 class="display-4 mb-3">Tarım ve Hayvancılık Takip Sistemi</h1>
+                    <p class="lead">Çiftliğinizi modern ve verimli bir şekilde yönetmek için tasarlanmış kapsamlı çözüm.</p>
+                    <hr class="my-4">
+                    <p>Hayvan takibi, arazi yönetimi, üretim planlaması, stok kontrolü ve finansal raporlama - hepsi tek bir platformda.</p>
+                    <div class="mt-4">
+                        <a href="{% url 'login' %}" class="btn btn-primary me-2">
+                            <i class="fas fa-sign-in-alt me-1"></i> Giriş Yap
+                        </a>
+                        <a href="{% url 'register' %}" class="btn btn-success">
+                            <i class="fas fa-user-plus me-1"></i> Kayıt Ol
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Özellik Kısmı -->
+                <div class="row my-5">
+                    <div class="col-12 mb-4 text-center">
+                        <h2>Özellikler</h2>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="feature-icon bg-primary text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-cow fa-2x"></i>
+                                </div>
+                                <h5 class="card-title">Hayvan Takibi</h5>
+                                <p class="card-text">Hayvanlarınızın küpe numaraları, sağlık kayıtları, doğum bilgileri ve üreme kayıtlarını kolayca takip edin.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="feature-icon bg-success text-white rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-tractor fa-2x"></i>
+                                </div>
+                                <h5 class="card-title">Arazi Yönetimi</h5>
+                                <p class="card-text">Arazilerinizi, parselleri ve ekimleri takip edin. Toprak analizlerini kaydedin ve verimi artırın.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <div class="feature-icon bg-warning text-dark rounded-circle mb-3 mx-auto d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                                    <i class="fas fa-chart-line fa-2x"></i>
+                                </div>
+                                <h5 class="card-title">Finansal Takip</h5>
+                                <p class="card-text">Gelir ve giderlerinizi kategorilere ayırın, finansal raporlar oluşturun ve karlılığınızı artırın.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

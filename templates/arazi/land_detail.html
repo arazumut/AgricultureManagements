@@ -1,0 +1,206 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ land.name }} - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sayfa başlığı ve butonlar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-map me-2"></i>{{ land.name }}</h1>
+        <div class="btn-group">
+            <a href="{% url 'arazi:land_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Arazilere Dön
+            </a>
+            <a href="{% url 'arazi:land_update' land.id %}" class="btn btn-primary">
+                <i class="fas fa-edit me-1"></i>Düzenle
+            </a>
+            <a href="{% url 'arazi:land_delete' land.id %}" class="btn btn-danger">
+                <i class="fas fa-trash-alt me-1"></i>Sil
+            </a>
+        </div>
+    </div>
+    
+    <!-- Mesajlar bölümü -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="row">
+        <!-- Arazi bilgileri kartı -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Arazi Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-ruler-combined me-1"></i>Toplam Alan:</strong></p>
+                        <p>{{ land.total_area }} dönüm</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-map-marker-alt me-1"></i>Lokasyon:</strong></p>
+                        <p>{{ land.location }}</p>
+                    </div>
+                    {% if land.address %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-home me-1"></i>Adres:</strong></p>
+                        <p>{{ land.address }}</p>
+                    </div>
+                    {% endif %}
+                    {% if land.latitude and land.longitude %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-globe me-1"></i>Koordinatlar:</strong></p>
+                        <p>{{ land.latitude }}, {{ land.longitude }}</p>
+                        <div id="map" style="height: 200px;" class="border rounded mb-3"></div>
+                    </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-calendar-alt me-1"></i>Oluşturulma Tarihi:</strong></p>
+                        <p>{{ land.created_at|date:"d.m.Y H:i" }}</p>
+                    </div>
+                    {% if land.description %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-sticky-note me-1"></i>Açıklama:</strong></p>
+                        <p>{{ land.description }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Parseller kartı -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Parseller</h5>
+                    <a href="{% url 'arazi:parcel_create' land.id %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>Yeni Parsel Ekle
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if parcels %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Parsel No</th>
+                                        <th>Alan (dönüm)</th>
+                                        <th>Toprak Türü</th>
+                                        <th>Sulama</th>
+                                        <th>Aktif Ekim</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for parcel in parcels %}
+                                        <tr>
+                                            <td>{{ parcel.parcel_no }}</td>
+                                            <td>{{ parcel.area }}</td>
+                                            <td>{{ parcel.soil_type|default:"-" }}</td>
+                                            <td>
+                                                {% if parcel.has_irrigation %}
+                                                <span class="badge bg-success">Var</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Yok</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if parcel.active_planting %}
+                                                <span class="badge bg-primary">{{ parcel.active_planting.product.name }}</span>
+                                                {% else %}
+                                                <span class="badge bg-secondary">Yok</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group">
+                                                    <a href="{% url 'arazi:parcel_detail' land_id=land.id parcel_id=parcel.id %}" class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="{% url 'uretim:planting_plan_create' %}?parcel={{ parcel.id }}" class="btn btn-sm btn-outline-success">
+                                                        <i class="fas fa-calendar-plus"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p class="mb-0">Bu araziye henüz parsel eklenmemiş.</p>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{% url 'arazi:parcel_create' land.id %}" class="btn btn-success">
+                                <i class="fas fa-plus me-1"></i>İlk Parseli Ekle
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Arazi istatistikleri kartı -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Arazi İstatistikleri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center py-3">
+                                    <h6 class="card-title">Toplam Alan</h6>
+                                    <h3 class="mb-0">{{ land.total_area }} dönüm</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center py-3">
+                                    <h6 class="card-title">Parsel Sayısı</h6>
+                                    <h3 class="mb-0">{{ parcels|length }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center py-3">
+                                    <h6 class="card-title">Aktif Ekimler</h6>
+                                    <h3 class="mb-0">{{ active_plantings|default:"0" }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body text-center py-3">
+                                    <h6 class="card-title">Toprak Analizleri</h6>
+                                    <h3 class="mb-0">{{ soil_analyses_count|default:"0" }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if land.latitude and land.longitude %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Burada gerçek harita entegrasyonu yapılabilir (ör. Leaflet, Google Maps)
+        var mapElement = document.getElementById('map');
+        if (mapElement) {
+            mapElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100"><p class="text-muted">Harita görüntüsü burada gösterilecek</p></div>';
+        }
+    });
+</script>
+{% endif %}
+{% endblock %} 

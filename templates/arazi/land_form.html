@@ -1,0 +1,238 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if land %}Arazi Düzenle{% else %}Yeni Arazi Ekle{% endif %} - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sayfa başlığı -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            {% if land %}
+                <i class="fas fa-edit me-2"></i>Arazi Düzenle
+            {% else %}
+                <i class="fas fa-plus-circle me-2"></i>Yeni Arazi Ekle
+            {% endif %}
+        </h1>
+        <div>
+            {% if land %}
+                <a href="{% url 'arazi:land_detail' land.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Arazi Detayına Dön
+                </a>
+            {% else %}
+                <a href="{% url 'arazi:land_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Arazi Listesine Dön
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Mesajlar bölümü -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Form kartı -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Arazi Bilgileri</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <!-- Arazi adı -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.name.help_text }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Toplam alan -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.total_area.id_for_label }}" class="form-label">{{ form.total_area.label }}</label>
+                            {{ form.total_area }}
+                            {% if form.total_area.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.total_area.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.total_area.help_text }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <!-- Lokasyon -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">{{ form.location.label }}</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.location.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.location.help_text }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Aktif durumu -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.is_active.id_for_label }}" class="form-label">{{ form.is_active.label }}</label>
+                            <div>
+                                {{ form.is_active }}
+                                <label class="form-check-label" for="{{ form.is_active.id_for_label }}">
+                                    Aktif
+                                </label>
+                            </div>
+                            {% if form.is_active.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.is_active.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.is_active.help_text }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Adres -->
+                <div class="form-group mb-3">
+                    <label for="{{ form.address.id_for_label }}" class="form-label">{{ form.address.label }}</label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.address.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">{{ form.address.help_text }}</div>
+                </div>
+                
+                <div class="row mb-3">
+                    <!-- Enlem -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.latitude.id_for_label }}" class="form-label">{{ form.latitude.label }}</label>
+                            {{ form.latitude }}
+                            {% if form.latitude.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.latitude.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.latitude.help_text }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Boylam -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.longitude.id_for_label }}" class="form-label">{{ form.longitude.label }}</label>
+                            {{ form.longitude }}
+                            {% if form.longitude.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.longitude.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.longitude.help_text }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Açıklama -->
+                <div class="form-group mb-3">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">{{ form.description.label }}</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.description.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">{{ form.description.help_text }}</div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    {% if land %}
+                        <a href="{% url 'arazi:land_detail' land.id %}" class="btn btn-light me-md-2">
+                            <i class="fas fa-times me-1"></i>İptal
+                        </a>
+                    {% else %}
+                        <a href="{% url 'arazi:land_list' %}" class="btn btn-light me-md-2">
+                            <i class="fas fa-times me-1"></i>İptal
+                        </a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>
+                        {% if land %}Güncelle{% else %}Kaydet{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form alanlarına Bootstrap sınıflarını ekle
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('select').forEach(function(el) {
+            el.classList.add('form-select');
+        });
+        
+        document.querySelectorAll('input[type="text"], input[type="number"], input[type="email"]').forEach(function(el) {
+            el.classList.add('form-control');
+        });
+        
+        document.querySelectorAll('textarea').forEach(function(el) {
+            el.classList.add('form-control');
+        });
+        
+        document.querySelectorAll('input[type="checkbox"]').forEach(function(el) {
+            el.classList.add('form-check-input');
+        });
+        
+        // Hata olan input'ları işaretle
+        document.querySelectorAll('.invalid-feedback').forEach(function(el) {
+            el.previousElementSibling.classList.add('is-invalid');
+        });
+    });
+</script>
+{% endblock %} 

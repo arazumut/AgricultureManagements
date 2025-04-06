@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if form.instance.id %}Tohum Düzenle{% else %}Yeni Tohum Ekle{% endif %} - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sayfa başlığı -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            {% if form.instance.id %}
+                <i class="fas fa-edit me-2"></i>Tohum Düzenle
+            {% else %}
+                <i class="fas fa-plus-circle me-2"></i>Yeni Tohum Ekle
+            {% endif %}
+            {% if product %}
+            <small class="text-muted">{{ product.name }} için</small>
+            {% endif %}
+        </h1>
+        <div>
+            {% if form.instance.id %}
+                <a href="{% url 'uretim:seed_detail' form.instance.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Tohum Detayına Dön
+                </a>
+            {% elif product %}
+                <a href="{% url 'uretim:product_detail' product.id %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Ürün Detayına Dön
+                </a>
+            {% else %}
+                <a href="{% url 'uretim:product_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Ürün Listesine Dön
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Mesajlar bölümü -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Form kartı -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0">Tohum Bilgileri</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
+                <div class="row mb-3">
+                    <!-- Tohum adı -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.name.help_text }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ürün -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.product.id_for_label }}" class="form-label">{{ form.product.label }}</label>
+                            {{ form.product }}
+                            {% if form.product.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.product.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.product.help_text }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <!-- Üretici -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.manufacturer.id_for_label }}" class="form-label">{{ form.manufacturer.label }}</label>
+                            {{ form.manufacturer }}
+                            {% if form.manufacturer.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.manufacturer.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.manufacturer.help_text }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Son kullanma tarihi -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.expiry_date.id_for_label }}" class="form-label">{{ form.expiry_date.label }}</label>
+                            {{ form.expiry_date }}
+                            {% if form.expiry_date.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.expiry_date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.expiry_date.help_text }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <!-- Mevcut miktar -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.quantity_on_hand.id_for_label }}" class="form-label">{{ form.quantity_on_hand.label }}</label>
+                            {{ form.quantity_on_hand }}
+                            {% if form.quantity_on_hand.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.quantity_on_hand.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.quantity_on_hand.help_text }}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ölçü birimi -->
+                    <div class="col-md-6">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.unit_of_measure.id_for_label }}" class="form-label">{{ form.unit_of_measure.label }}</label>
+                            {{ form.unit_of_measure }}
+                            {% if form.unit_of_measure.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.unit_of_measure.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">{{ form.unit_of_measure.help_text }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Açıklama -->
+                <div class="form-group mb-3">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label">{{ form.notes.label }}</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.notes.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    <div class="form-text">{{ form.notes.help_text }}</div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    {% if product %}
+                        <a href="{% url 'uretim:product_detail' product.id %}" class="btn btn-light me-md-2">
+                            <i class="fas fa-times me-1"></i>İptal
+                        </a>
+                    {% else %}
+                        <a href="{% url 'uretim:product_list' %}" class="btn btn-light me-md-2">
+                            <i class="fas fa-times me-1"></i>İptal
+                        </a>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>
+                        {% if form.instance.id %}Güncelle{% else %}Kaydet{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form alanlarına Bootstrap sınıflarını ekle
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('select').forEach(function(el) {
+            el.classList.add('form-select');
+        });
+        
+        document.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]').forEach(function(el) {
+            el.classList.add('form-control');
+        });
+        
+        document.querySelectorAll('textarea').forEach(function(el) {
+            el.classList.add('form-control');
+        });
+        
+        // Hata olan input'ları işaretle
+        document.querySelectorAll('.invalid-feedback').forEach(function(el) {
+            el.previousElementSibling.classList.add('is-invalid');
+        });
+    });
+</script>
+{% endblock %} 

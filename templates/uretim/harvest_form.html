@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sayfa başlığı ve butonlar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-leaf me-2"></i>{{ title }}</h1>
+        <a href="{% url 'uretim:planting_detail' planting_id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Ekim Detaylarına Dön
+        </a>
+    </div>
+    
+    <!-- Mesajlar bölümü -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Form kartı -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Hasat Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.harvest_date.id_for_label }}" class="form-label">Hasat Tarihi <span class="text-danger">*</span></label>
+                                {{ form.harvest_date }}
+                                {% if form.harvest_date.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.harvest_date.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.harvest_date.help_text %}
+                                    <div class="form-text">{{ form.harvest_date.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.harvest_amount.id_for_label }}" class="form-label">Hasat Miktarı <span class="text-danger">*</span></label>
+                                {{ form.harvest_amount }}
+                                {% if form.harvest_amount.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.harvest_amount.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.harvest_amount.help_text %}
+                                    <div class="form-text">{{ form.harvest_amount.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.unit_of_measure.id_for_label }}" class="form-label">Ölçü Birimi <span class="text-danger">*</span></label>
+                                {{ form.unit_of_measure }}
+                                {% if form.unit_of_measure.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.unit_of_measure.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.unit_of_measure.help_text %}
+                                    <div class="form-text">{{ form.unit_of_measure.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.yield_rate.id_for_label }}" class="form-label">Verim Oranı</label>
+                                {{ form.yield_rate }}
+                                {% if form.yield_rate.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.yield_rate.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.yield_rate.help_text %}
+                                    <div class="form-text">{{ form.yield_rate.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.quality_rating.id_for_label }}" class="form-label">Kalite Değerlendirmesi</label>
+                            {{ form.quality_rating }}
+                            {% if form.quality_rating.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.quality_rating.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.quality_rating.help_text %}
+                                <div class="form-text">{{ form.quality_rating.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.harvest_image.id_for_label }}" class="form-label">Hasat Fotoğrafı</label>
+                            {{ form.harvest_image }}
+                            {% if form.harvest_image.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.harvest_image.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.harvest_image.help_text %}
+                                <div class="form-text">{{ form.harvest_image.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Notlar</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.notes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.notes.help_text %}
+                                <div class="form-text">{{ form.notes.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Kaydet
+                            </button>
+                            <a href="{% url 'uretim:planting_detail' planting_id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>İptal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Ekim bilgileri özeti -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Ekim Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-leaf me-1"></i>Ürün:</strong></p>
+                        <p>{{ planting.product.name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-map-marker-alt me-1"></i>Arazi/Parsel:</strong></p>
+                        <p>{{ planting.parcel.land.name }} / {{ planting.parcel.parcel_no }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-calendar-day me-1"></i>Ekim Tarihi:</strong></p>
+                        <p>{{ planting.planting_date }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-ruler-combined me-1"></i>Ekim Alanı:</strong></p>
+                        <p>{{ planting.area }} dönüm</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong><i class="fas fa-calendar-check me-1"></i>Tahmini Hasat Tarihi:</strong></p>
+                        <p>{{ planting.estimated_harvest_date }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Yardım ve ipuçları -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">İpuçları</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Hasat Tarihi:</strong></p>
+                        <p class="small">Hasadın gerçekleştiği günü seçin.</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Hasat Miktarı:</strong></p>
+                        <p class="small">Toplam hasat miktarını girin.</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Verim Oranı:</strong></p>
+                        <p class="small">Dönüm başına verim miktarını hesaplamak için doldurabilirsiniz.</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Kalite Değerlendirmesi:</strong></p>
+                        <p class="small">Hasadın kalitesini 1-5 arasında değerlendirin.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Otomatik verim oranı hesaplama
+        const harvestAmountField = document.getElementById('{{ form.harvest_amount.id_for_label }}');
+        const yieldRateField = document.getElementById('{{ form.yield_rate.id_for_label }}');
+        const plantingArea = {{ planting.area|default:0 }};
+        
+        if (harvestAmountField && yieldRateField) {
+            harvestAmountField.addEventListener('input', function() {
+                if (harvestAmountField.value && plantingArea > 0) {
+                    const amount = parseFloat(harvestAmountField.value);
+                    if (!isNaN(amount)) {
+                        const yieldRate = (amount / plantingArea).toFixed(2);
+                        yieldRateField.value = yieldRate;
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %} 

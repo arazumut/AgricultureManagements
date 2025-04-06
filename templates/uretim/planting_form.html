@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sayfa başlığı ve butonlar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-seedling me-2"></i>{{ title }}</h1>
+        <a href="{% url 'uretim:planting_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Ekimlere Dön
+        </a>
+    </div>
+    
+    <!-- Mesajlar bölümü -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Form kartı -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">Ekim Bilgileri</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.product.id_for_label }}" class="form-label">Ürün <span class="text-danger">*</span></label>
+                                {{ form.product }}
+                                {% if form.product.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.product.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.product.help_text %}
+                                    <div class="form-text">{{ form.product.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.parcel.id_for_label }}" class="form-label">Parsel <span class="text-danger">*</span></label>
+                                {{ form.parcel }}
+                                {% if form.parcel.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.parcel.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.parcel.help_text %}
+                                    <div class="form-text">{{ form.parcel.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.planting_date.id_for_label }}" class="form-label">Ekim Tarihi <span class="text-danger">*</span></label>
+                                {{ form.planting_date }}
+                                {% if form.planting_date.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.planting_date.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.planting_date.help_text %}
+                                    <div class="form-text">{{ form.planting_date.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.area.id_for_label }}" class="form-label">Ekim Alanı (dönüm) <span class="text-danger">*</span></label>
+                                {{ form.area }}
+                                {% if form.area.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.area.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.area.help_text %}
+                                    <div class="form-text">{{ form.area.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.seed.id_for_label }}" class="form-label">Tohum</label>
+                                {{ form.seed }}
+                                {% if form.seed.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.seed.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.seed.help_text %}
+                                    <div class="form-text">{{ form.seed.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.planting_plan.id_for_label }}" class="form-label">Ekim Planı</label>
+                                {{ form.planting_plan }}
+                                {% if form.planting_plan.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.planting_plan.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.planting_plan.help_text %}
+                                    <div class="form-text">{{ form.planting_plan.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.estimated_harvest_date.id_for_label }}" class="form-label">Tahmini Hasat Tarihi</label>
+                                {{ form.estimated_harvest_date }}
+                                {% if form.estimated_harvest_date.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.estimated_harvest_date.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.estimated_harvest_date.help_text %}
+                                    <div class="form-text">{{ form.estimated_harvest_date.help_text }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.planting_image.id_for_label }}" class="form-label">Ekim Fotoğrafı</label>
+                                {{ form.planting_image }}
+                                {% if form.planting_image.errors %}
+                                    <div class="text-danger">
+                                        {% for error in form.planting_image.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                {% if form.planting_image.help_text %}
+                                    <div class="form-text">{{ form.planting_image.help_text }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Notlar</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.notes.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            {% if form.notes.help_text %}
+                                <div class="form-text">{{ form.notes.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>Kaydet
+                            </button>
+                            <a href="{% url 'uretim:planting_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>İptal
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Yardım ve ipuçları -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">İpuçları</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Ürün:</strong></p>
+                        <p class="small">Ekilecek ürünü seçin. Ürünün doğru olması, tahmini hasat tarihinin hesaplanmasında önemlidir.</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Parsel:</strong></p>
+                        <p class="small">Ekimin yapılacağı parseli seçin. Her parsel sadece bir aktif ekim içerebilir.</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Ekim Tarihi:</strong></p>
+                        <p class="small">Ekimin yapıldığı tarihi seçin. Tahmini hasat tarihinin hesaplanmasında kullanılır.</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Ekim Alanı:</strong></p>
+                        <p class="small">Ekimin yapıldığı alan miktarını dönüm cinsinden girin. Parsel alanından büyük olamaz.</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Tohum:</strong></p>
+                        <p class="small">Kullanılan tohumu seçin. İsteğe bağlıdır.</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Tahmini Hasat Tarihi:</strong></p>
+                        <p class="small">Eğer ürünün yetişme süresi tanımlanmışsa, otomatik hesaplanacaktır. İhtiyaç halinde değiştirebilirsiniz.</p>
+                    </div>
+                </div>
+            </div>
+            
+            {% if form.instance.id %}
+                <!-- Mevcut görsel -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">Mevcut Görsel</h5>
+                    </div>
+                    <div class="card-body text-center">
+                        {% if form.instance.planting_image %}
+                            <img src="{{ form.instance.planting_image.url }}" alt="Ekim görseli" class="img-fluid rounded mb-3" style="max-height: 200px;">
+                            <p class="small text-muted">Yeni bir görsel yüklerseniz, bu görsel değiştirilecektir.</p>
+                        {% else %}
+                            <div class="alert alert-light">
+                                <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                                <p>Henüz ekim görseli bulunmuyor.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form elemanlarını otomatik olarak biçimlendir
+        const formControls = document.querySelectorAll('input, select, textarea');
+        formControls.forEach(element => {
+            if (!element.classList.contains('form-control') && !element.classList.contains('form-select') && element.type !== 'file') {
+                if (element.tagName === 'SELECT') {
+                    element.classList.add('form-select');
+                } else if (element.type !== 'checkbox' && element.type !== 'radio') {
+                    element.classList.add('form-control');
+                }
+            }
+            
+            if (element.type === 'file') {
+                element.classList.add('form-control');
+            }
+            
+            if (element.tagName === 'TEXTAREA') {
+                element.rows = 5;
+            }
+        });
+        
+        // Ürün seçildiğinde tahmini hasat tarihini hesapla
+        const productField = document.getElementById('{{ form.product.id_for_label }}');
+        const plantingDateField = document.getElementById('{{ form.planting_date.id_for_label }}');
+        const estimatedHarvestDateField = document.getElementById('{{ form.estimated_harvest_date.id_for_label }}');
+        
+        function updateEstimatedHarvestDate() {
+            if (productField.value && plantingDateField.value) {
+                fetch(`/uretim/api/calculate-harvest-date/?product_id=${productField.value}&planting_date=${plantingDateField.value}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.estimated_harvest_date) {
+                            estimatedHarvestDateField.value = data.estimated_harvest_date;
+                        }
+                    })
+                    .catch(error => console.error('Hasat tarihi hesaplama hatası:', error));
+            }
+        }
+        
+        if (productField && plantingDateField && estimatedHarvestDateField) {
+            productField.addEventListener('change', updateEstimatedHarvestDate);
+            plantingDateField.addEventListener('change', updateEstimatedHarvestDate);
+        }
+    });
+</script>
+{% endblock %} 

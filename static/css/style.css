@@ -1,0 +1,105 @@
+/* Ana CSS dosyası */
+
+/* Renk değişkenleri */
+:root {
+    --primary-dark: #0056b3;
+    --success-dark: #1e7e34;
+    --info-dark: #117a8b;
+    --warning-dark: #d39e00;
+    --danger-dark: #bd2130;
+}
+
+/* Genel stiller */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+/* Card genişlemesi için hover efekti */
+.card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+/* Özel renk sınıfları */
+.bg-primary-dark {
+    background-color: var(--primary-dark);
+}
+
+.bg-success-dark {
+    background-color: var(--success-dark);
+}
+
+.bg-info-dark {
+    background-color: var(--info-dark);
+}
+
+.bg-warning-dark {
+    background-color: var(--warning-dark);
+}
+
+.bg-danger-dark {
+    background-color: var(--danger-dark);
+}
+
+/* Navbar stilleri */
+.navbar .nav-link {
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+}
+
+.navbar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dropdown-menu {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Özel butonlar */
+.btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-icon .fa, .btn-icon .fas, .btn-icon .far {
+    margin-right: 0.5rem;
+}
+
+/* Form stilleri */
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Animasyonlar */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+/* Mobil uyumluluk */
+@media (max-width: 767.98px) {
+    .card-body {
+        padding: 1rem;
+    }
+    
+    h1, .h1 {
+        font-size: 1.75rem;
+    }
+    
+    h2, .h2 {
+        font-size: 1.5rem;
+    }
+} 

@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ parcel.land.name }} - Parsel {{ parcel.parcel_no }} - Tarım ve Hayvancılık Takip Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Sayfa başlığı ve butonlar -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-map-marker-alt me-2"></i>{{ parcel.land.name }} - Parsel {{ parcel.parcel_no }}</h1>
+        <div class="btn-group">
+            <a href="{% url 'arazi:land_detail' parcel.land.id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Arazi Detayına Dön
+            </a>
+            <a href="{% url 'uretim:planting_plan_create' %}?parcel={{ parcel.id }}" class="btn btn-success">
+                <i class="fas fa-calendar-plus me-1"></i>Ekim Planı Ekle
+            </a>
+        </div>
+    </div>
+    
+    <!-- Mesajlar bölümü -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="row">
+        <!-- Parsel bilgileri kartı -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Parsel Bilgileri</h5>
+                    <a href="#" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-edit"></i> Düzenle
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Parsel No:</strong></p>
+                            <p>{{ parcel.parcel_no }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Alan:</strong></p>
+                            <p>{{ parcel.area }} dönüm</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Toprak Türü:</strong></p>
+                            <p>{{ parcel.soil_type|default:"Belirtilmemiş" }}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Sulama Durumu:</strong></p>
+                            <p>{% if parcel.has_irrigation %}<span class="badge bg-success">Var</span>{% else %}<span class="badge bg-danger">Yok</span>{% endif %}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Aktif Durum:</strong></p>
+                            <p>{% if parcel.is_active %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-danger">Pasif</span>{% endif %}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Oluşturulma Tarihi:</strong></p>
+                            <p>{{ parcel.created_at|date:"d.m.Y H:i" }}</p>
+                        </div>
+                    </div>
+                    
+                    {% if parcel.description %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Açıklama:</strong></p>
+                        <p>{{ parcel.description }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if parcel.coordinates %}
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Koordinatlar:</strong></p>
+                        <div id="parcel-map" style="height: 200px;" class="border rounded"></div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Aktif Ekimler -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Aktif Ekimler</h5>
+                    <a href="{% url 'uretim:planting_create' %}?parcel={{ parcel.id }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-seedling"></i> Yeni Ekim
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if plantings %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Ürün</th>
+                                        <th>Ekim Tarihi</th>
+                                        <th>Tahmini Hasat</th>
+                                        <th>Durum</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for planting in plantings %}
+                                        <tr>
+                                            <td>{{ planting.product.name }}</td>
+                                            <td>{{ planting.planting_date }}</td>
+                                            <td>{{ planting.estimated_harvest_date }}</td>
+                                            <td>
+                                                {% if planting.is_harvested %}
+                                                <span class="badge bg-success">Hasat Edildi</span>
+                                                {% else %}
+                                                <span class="badge bg-primary">Aktif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'uretim:planting_detail' planting.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p class="mb-0">Bu parselde henüz aktif ekim bulunmamaktadır.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toprak Analizleri -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Toprak Analizleri</h5>
+                    <a href="{% url 'arazi:soil_analysis_create' land_id=land.id parcel_id=parcel.id %}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-flask"></i> Yeni Analiz
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if soil_analyses %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>pH</th>
+                                        <th>Organik Madde</th>
+                                        <th>Raporlar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for analysis in soil_analyses %}
+                                        <tr>
+                                            <td>{{ analysis.analysis_date }}</td>
+                                            <td>{{ analysis.ph_value|default:"-" }}</td>
+                                            <td>{{ analysis.organic_matter|default:"-" }}%</td>
+                                            <td>
+                                                {% if analysis.report_file %}
+                                                <a href="{{ analysis.report_file.url }}" class="btn btn-sm btn-outline-info" target="_blank">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
+                                                {% else %}
+                                                <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p class="mb-0">Bu parsele ait toprak analizi kaydı bulunmamaktadır.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sulama Kayıtları -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Sulama Kayıtları</h5>
+                    <a href="{% url 'arazi:irrigation_record_create' land_id=land.id parcel_id=parcel.id %}" class="btn btn-sm btn-info">
+                        <i class="fas fa-tint"></i> Yeni Sulama Kaydı
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if irrigation_records %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Tarih</th>
+                                        <th>Su Miktarı</th>
+                                        <th>Yöntem</th>
+                                        <th>Süre</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in irrigation_records %}
+                                        <tr>
+                                            <td>{{ record.irrigation_date }}</td>
+                                            <td>{{ record.water_amount|default:"-" }} m³</td>
+                                            <td>{{ record.irrigation_method|default:"-" }}</td>
+                                            <td>{{ record.irrigation_duration|default:"-" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <p class="mb-0">Bu parsele ait sulama kaydı bulunmamaktadır.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if parcel.coordinates %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Harita gösterimi için yer tutucu
+        // Burada gerçek harita entegrasyonu yapılabilir (ör. Leaflet, Google Maps)
+        var mapElement = document.getElementById('parcel-map');
+        mapElement.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100"><p class="text-muted">Harita görüntüsü burada gösterilecek</p></div>';
+    });
+</script>
+{% endif %}
+{% endblock %} 
