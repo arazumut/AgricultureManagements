@@ -226,7 +226,9 @@
         // Otomatik verim oranı hesaplama
         const harvestAmountField = document.getElementById('{{ form.harvest_amount.id_for_label }}');
         const yieldRateField = document.getElementById('{{ form.yield_rate.id_for_label }}');
-        const plantingArea = {{ planting.area|default:0 }};
+        
+        // Django template değişkenini güvenli bir şekilde JS'e aktarma
+        const plantingArea = parseFloat('{{ planting.area|default:"0" }}');
         
         if (harvestAmountField && yieldRateField) {
             harvestAmountField.addEventListener('input', function() {
