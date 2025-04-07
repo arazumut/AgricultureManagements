@@ -4,12 +4,13 @@ from django.contrib import messages
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db import IntegrityError
 from django.utils.translation import gettext as _
 from .models import Animal, AnimalType, AnimalBreed, HealthRecord, ReproductionRecord, Birth, Feeding, AnimalGroup
 from .forms import AnimalForm, HealthRecordForm, ReproductionRecordForm, BirthForm
 from datetime import datetime
+from django.views.decorators.http import require_GET
 
 @login_required
 def animal_list(request):
@@ -341,3 +342,18 @@ def herd_statistics(request):
     }
     
     return render(request, 'hayvan/herd_statistics.html', context)
+
+@require_GET
+def load_breeds(request):
+    """AJAX isteği ile hayvan ırklarını yükler"""
+    animal_type_id = request.GET.get('animal_type_id')
+    
+    if not animal_type_id:
+        return JsonResponse({'breeds': []})
+    
+    try:
+        breeds = AnimalBreed.objects.filter(animal_type_id=animal_type_id).order_by('name')
+        breeds_data = [{'id': breed.id, 'name': breed.name} for breed in breeds]
+        return JsonResponse({'breeds': breeds_data})
+    except (ValueError, AnimalBreed.DoesNotExist):
+        return JsonResponse({'breeds': []})

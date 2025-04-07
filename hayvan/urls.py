@@ -27,4 +27,5 @@ urlpatterns = [
     
     # İstatistikler ve raporlar
     path('istatistikler/', views.herd_statistics, name='herd_statistics'),
+    path('ajax/load-breeds/', views.load_breeds, name='ajax_load_breeds'),
 ] 

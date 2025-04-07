@@ -1,6 +1,6 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from .models import Animal, HealthRecord, ReproductionRecord, Birth, Offspring
+from .models import Animal, HealthRecord, ReproductionRecord, Birth, Offspring, AnimalType, AnimalBreed
 
 class AnimalForm(forms.ModelForm):
     """Form for creating and updating animal records"""
@@ -31,6 +31,22 @@ class AnimalForm(forms.ModelForm):
             
         # Add placeholder for tag number
         self.fields['tag_number'].widget.attrs['placeholder'] = _('Küpe numarasını giriniz')
+        
+        # Hayvan türü seçeneklerini sırala
+        self.fields['animal_type'].queryset = AnimalType.objects.all().order_by('name')
+        
+        # Hayvan ırkı seçeneklerini başlangıçta boş bırak
+        self.fields['breed'].queryset = AnimalBreed.objects.none()
+        
+        # Eğer bir hayvan türü seçiliyse, o türe ait ırkları göster
+        if 'animal_type' in self.data:
+            try:
+                animal_type_id = int(self.data.get('animal_type'))
+                self.fields['breed'].queryset = AnimalBreed.objects.filter(animal_type_id=animal_type_id).order_by('name')
+            except (ValueError, TypeError):
+                pass
+        elif self.instance.pk:
+            self.fields['breed'].queryset = self.instance.animal_type.breeds.order_by('name')
 
 class HealthRecordForm(forms.ModelForm):
     """Form for creating health records"""

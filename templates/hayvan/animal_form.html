@@ -207,36 +207,53 @@
             }, false);
         });
         
-        // Irk filtreleme
+        // Hayvan türü ve ırk seçimi için AJAX işlemleri
         const animalTypeSelect = document.getElementById('animal_type');
         const breedSelect = document.getElementById('breed');
-        const breedOptions = Array.from(breedSelect.options);
         
-        function filterBreeds() {
-            const selectedTypeId = animalTypeSelect.value;
+        function updateBreeds() {
+            const animalTypeId = animalTypeSelect.value;
             
-            // Tüm ırkları temizle
-            breedSelect.innerHTML = '';
+            // Seçilen tür yoksa ırk seçimini temizle
+            if (!animalTypeId) {
+                breedSelect.innerHTML = '<option value="">Irk Seçin</option>';
+                return;
+            }
             
-            // Boş seçenek ekle
-            const emptyOption = document.createElement('option');
-            emptyOption.value = '';
-            emptyOption.textContent = 'Irk Seçin';
-            breedSelect.appendChild(emptyOption);
-            
-            // Seçilen türe ait ırkları filtrele ve ekle
-            breedOptions.forEach(function(option) {
-                if (option.value === '' || option.dataset.animalType === selectedTypeId) {
-                    breedSelect.appendChild(option.cloneNode(true));
-                }
-            });
+            // AJAX isteği ile ırkları getir
+            fetch(`/hayvan/ajax/load-breeds/?animal_type_id=${animalTypeId}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Irk seçimini temizle
+                    breedSelect.innerHTML = '<option value="">Irk Seçin</option>';
+                    
+                    // Yeni ırkları ekle
+                    data.breeds.forEach(breed => {
+                        const option = document.createElement('option');
+                        option.value = breed.id;
+                        option.textContent = breed.name;
+                        breedSelect.appendChild(option);
+                    });
+                    
+                    // Eğer düzenleme modundaysak ve önceden seçili bir ırk varsa, onu seç
+                    {% if animal %}
+                        const selectedBreedId = '{{ animal.breed.id }}';
+                        if (selectedBreedId) {
+                            breedSelect.value = selectedBreedId;
+                        }
+                    {% endif %}
+                })
+                .catch(error => {
+                    console.error('Irk yükleme hatası:', error);
+                });
         }
         
-        animalTypeSelect.addEventListener('change', filterBreeds);
+        // Hayvan türü değiştiğinde ırkları güncelle
+        animalTypeSelect.addEventListener('change', updateBreeds);
         
-        // Sayfa yüklendiğinde filtreleme uygula
+        // Sayfa yüklendiğinde ırkları güncelle
         if (animalTypeSelect.value) {
-            filterBreeds();
+            updateBreeds();
         }
     });
 </script>
