@@ -16,6 +16,7 @@ urlpatterns = [
     path('<int:land_id>/parsel/<int:parcel_id>/', views.parcel_detail, name='parcel_detail'),
     
     # Toprak analizi işlemleri
+    path('toprak-analizleri/', views.soil_analysis_list, name='soil_analysis_list'),
     path('<int:land_id>/parsel/<int:parcel_id>/toprak-analizi/ekle/', views.soil_analysis_create, name='soil_analysis_create'),
     
     # Sulama kayıtları işlemleri

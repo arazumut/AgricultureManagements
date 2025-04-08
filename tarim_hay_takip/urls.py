@@ -36,9 +36,9 @@ urlpatterns = [
     path('arazi/', include('arazi.urls', namespace='arazi')),
     path('uretim/', include('uretim.urls', namespace='uretim')),
     path('stok/', include('stok.urls', namespace='stok')),
-    # path('finans/', include('finans.urls')),
-    # path('gorev/', include('gorev.urls')),
-    # path('analitik/', include('analitik.urls')),
+    path('finans/', include('finans.urls', namespace='finans')),
+    path('gorev/', include('gorev.urls', namespace='gorev')),
+    path('analitik/', include('analitik.urls', namespace='analitik')),
 ]
 
 # Geliştirme ortamında statik ve medya dosyalarına erişim

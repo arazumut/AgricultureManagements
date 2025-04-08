@@ -559,3 +559,182 @@ def animal_group_delete(request, pk):
     return render(request, 'hayvan/animal_group_confirm_delete.html', {
         'animal_group': animal_group
     })
+
+@login_required
+def health_record_list(request):
+    """Tüm sağlık kayıtlarını listeler"""
+    # Base queryset
+    health_records = HealthRecord.objects.select_related('animal', 'animal__animal_type').all()
+    
+    # Get all animal types for filter dropdown
+    animal_types = AnimalType.objects.all()
+    
+    # Get filter parameters
+    search_query = request.GET.get('search', '')
+    selected_type = request.GET.get('animal_type', '')
+    selected_procedure = request.GET.get('procedure_type', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    
+    # Apply search filter
+    if search_query:
+        health_records = health_records.filter(
+            Q(animal__tag_number__icontains=search_query) |
+            Q(procedure_name__icontains=search_query) |
+            Q(veterinarian__icontains=search_query) |
+            Q(notes__icontains=search_query)
+        )
+    
+    # Apply animal type filter
+    if selected_type:
+        health_records = health_records.filter(animal__animal_type_id=selected_type)
+    
+    # Apply procedure type filter
+    if selected_procedure:
+        health_records = health_records.filter(procedure_type=selected_procedure)
+    
+    # Apply date range filters
+    if date_from:
+        health_records = health_records.filter(procedure_date__gte=date_from)
+    
+    if date_to:
+        health_records = health_records.filter(procedure_date__lte=date_to)
+    
+    # Order by procedure date (newest first)
+    health_records = health_records.order_by('-procedure_date')
+    
+    # Pagination
+    paginator = Paginator(health_records, 10)  # 10 records per page
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'animal_types': animal_types,
+    }
+    
+    return render(request, 'hayvan/health_record_list.html', context)
+
+@login_required
+def health_record_update(request, pk):
+    """Sağlık kaydını günceller"""
+    health_record = get_object_or_404(HealthRecord, pk=pk)
+    animal = health_record.animal
+    
+    # Check if the user owns the animal
+    if animal.owner != request.user:
+        messages.error(request, _('Bu sağlık kaydını düzenleme yetkiniz yok.'))
+        return redirect('hayvan:health_record_list')
+    
+    if request.method == 'POST':
+        form = HealthRecordForm(request.POST, instance=health_record)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _('Sağlık kaydı başarıyla güncellendi.'))
+            return redirect('hayvan:animal_detail', pk=animal.pk)
+    else:
+        form = HealthRecordForm(instance=health_record)
+    
+    context = {
+        'form': form,
+        'animal': animal,
+        'health_record': health_record
+    }
+    
+    return render(request, 'hayvan/health_record_form.html', context)
+
+@login_required
+def health_record_delete(request, pk):
+    """Sağlık kaydını siler"""
+    health_record = get_object_or_404(HealthRecord, pk=pk)
+    animal = health_record.animal
+    
+    # Check if the user owns the animal
+    if animal.owner != request.user:
+        messages.error(request, _('Bu sağlık kaydını silme yetkiniz yok.'))
+        return redirect('hayvan:health_record_list')
+    
+    if request.method == 'POST':
+        # Confirm delete checkbox is required
+        if request.POST.get('confirm_delete'):
+            health_record.delete()
+            messages.success(request, _('Sağlık kaydı başarıyla silindi.'))
+            return redirect('hayvan:animal_detail', pk=animal.pk)
+        else:
+            messages.error(request, _('Silme işlemini onaylamanız gerekmektedir.'))
+    
+    context = {
+        'health_record': health_record,
+        'animal': animal
+    }
+    
+    return render(request, 'hayvan/health_record_confirm_delete.html', context)
+
+@login_required
+def bulk_feeding(request):
+    """
+    Birden fazla hayvan için toplu besleme kaydı oluşturan görünüm
+    """
+    # Tüm aktif hayvanları al
+    animals = Animal.objects.filter(is_active=True).select_related('animal_type', 'breed')
+    animal_types = AnimalType.objects.all()
+    animal_groups = AnimalGroup.objects.all()
+    
+    if request.method == 'POST':
+        # Form verilerini al
+        feeding_date = request.POST.get('feeding_date')
+        feed_type = request.POST.get('feed_type')
+        notes = request.POST.get('notes', '')
+        selected_animals = request.POST.getlist('selected_animals')
+        
+        # Temel doğrulama
+        if not feeding_date or not feed_type or not selected_animals:
+            messages.error(request, _('Tarih, yem türü ve en az bir hayvan seçilmelidir.'))
+        else:
+            # Başarılı kayıt sayısı
+            success_count = 0
+            error_count = 0
+            
+            # Seçilen her hayvan için besleme kaydı oluştur
+            for animal_id in selected_animals:
+                try:
+                    animal = Animal.objects.get(id=animal_id, is_active=True)
+                    amount = request.POST.get(f'amount_{animal_id}')
+                    
+                    if amount and float(amount) > 0:
+                        # Besleme kaydı oluştur
+                        Feeding.objects.create(
+                            animal=animal,
+                            feeding_date=feeding_date,
+                            feed_type=feed_type,
+                            amount=float(amount),
+                            description=notes
+                        )
+                        success_count += 1
+                    else:
+                        error_count += 1
+                except Exception as e:
+                    error_count += 1
+                    print(f"Besleme kaydı oluşturulurken hata: {str(e)}")
+            
+            if success_count > 0:
+                messages.success(request, _(f'{success_count} hayvan için besleme kaydı başarıyla oluşturuldu.'))
+                
+            if error_count > 0:
+                messages.warning(request, _(f'{error_count} hayvan için besleme kaydı oluşturulamadı. Lütfen miktarları kontrol edin.'))
+                
+            if success_count > 0:
+                return redirect('hayvan:animal_list')
+    
+    # Bugünün tarihini context'e ekle
+    from datetime import date
+    today = date.today()
+    
+    context = {
+        'animals': animals,
+        'animal_types': animal_types,
+        'animal_groups': animal_groups,
+        'today': today,
+    }
+    
+    return render(request, 'hayvan/bulk_feeding_form.html', context)

@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Sağlık Kaydını Sil - TarımHayTakip
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-heartbeat me-2"></i>Sağlık Kaydını Sil
+            </h1>
+            <div>
+                <a href="{% url 'hayvan:animal_detail' animal.id %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Hayvan Detayına Dön
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow-sm border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Uyarı
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <strong>Dikkat:</strong> Bu işlem geri alınamaz. Silinen sağlık kaydı tamamen silinecek ve geri getirilemeyecektir.
+                </div>
+                
+                <h5 class="mt-4">Silinecek Sağlık Kaydı:</h5>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th width="30%">Hayvan:</th>
+                            <td>{{ animal.tag_number }} ({{ animal.animal_type.name }})</td>
+                        </tr>
+                        <tr>
+                            <th>İşlem Tarihi:</th>
+                            <td>{{ health_record.procedure_date|date:"d.m.Y" }}</td>
+                        </tr>
+                        <tr>
+                            <th>İşlem Tipi:</th>
+                            <td>
+                                {% if health_record.procedure_type == 'vaccination' %}
+                                    <span class="badge bg-primary">Aşılama</span>
+                                {% elif health_record.procedure_type == 'treatment' %}
+                                    <span class="badge bg-warning text-dark">Tedavi</span>
+                                {% elif health_record.procedure_type == 'examination' %}
+                                    <span class="badge bg-info text-dark">Muayene</span>
+                                {% elif health_record.procedure_type == 'surgery' %}
+                                    <span class="badge bg-danger">Cerrahi</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Diğer</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>İşlem Adı:</th>
+                            <td>{{ health_record.procedure_name }}</td>
+                        </tr>
+                        <tr>
+                            <th>Veteriner:</th>
+                            <td>{{ health_record.veterinarian|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <th>Maliyet:</th>
+                            <td>{{ health_record.cost|floatformat:2 }} TL</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="confirm_delete" name="confirm_delete">
+                        <label class="form-check-label" for="confirm_delete">
+                            Bu sağlık kaydını silmek istediğimi onaylıyorum.
+                        </label>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'hayvan:animal_detail' animal.id %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Sağlık Kaydını Sil
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

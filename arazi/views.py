@@ -220,3 +220,11 @@ def irrigation_record_create(request, land_id, parcel_id):
     }
     
     return render(request, 'arazi/irrigation_record_form.html', context)
+
+@login_required
+def soil_analysis_list(request):
+    """Toprak analizlerini listeler"""
+    soil_analyses = SoilAnalysis.objects.all().order_by('-analysis_date')
+    return render(request, 'arazi/soil_analysis_list.html', {
+        'soil_analyses': soil_analyses
+    })

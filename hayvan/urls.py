@@ -27,7 +27,10 @@ urlpatterns = [
     path('irklar/yukle/', views.load_breeds, name='load_breeds'),
     
     # Sağlık kayıtları
+    path('saglik/', views.health_record_list, name='health_record_list'),
     path('<int:animal_id>/saglik/ekle/', views.health_record_create, name='health_record_create'),
+    path('saglik/<int:pk>/duzenle/', views.health_record_update, name='health_record_update'),
+    path('saglik/<int:pk>/sil/', views.health_record_delete, name='health_record_delete'),
     
     # Üreme kayıtları
     path('<int:animal_id>/ureme/ekle/', views.reproduction_record_create, name='reproduction_record_create'),
@@ -39,10 +42,14 @@ urlpatterns = [
     # Besleme kayıtları
     path('<int:animal_id>/besleme/ekle/', views.feeding_create, name='feeding_create'),
     path('gruplar/<int:group_id>/besleme/ekle/', views.feeding_create, name='group_feeding_create'),
+    path('besleme/toplu/', views.bulk_feeding, name='bulk_feeding'),
     
     # Grup yönetimi
     path('gruplar/', views.animal_group_list, name='animal_group_list'),
     path('gruplar/ekle/', views.animal_group_create, name='animal_group_create'),
     path('gruplar/<int:pk>/duzenle/', views.animal_group_update, name='animal_group_update'),
     path('gruplar/<int:pk>/sil/', views.animal_group_delete, name='animal_group_delete'),
+    
+    # İstatistikler
+    path('istatistikler/', views.herd_statistics, name='herd_statistics'),
 ] 

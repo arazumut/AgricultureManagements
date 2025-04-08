@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    Toplu Besleme - TarımHayTakip
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-utensils me-2"></i>Toplu Besleme Kaydı
+            </h1>
+            <a href="{% url 'hayvan:animal_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Hayvan Listesine Dön
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Toplu Besleme Bilgileri</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="bulk-feeding-form" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label for="feeding_date" class="form-label">Besleme Tarihi <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="feeding_date" name="feeding_date" 
+                                   value="{{ today|date:'Y-m-d' }}" required>
+                            <div class="invalid-feedback">
+                                Besleme tarihi zorunludur.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="feed_type" class="form-label">Yem Türü <span class="text-danger">*</span></label>
+                            <select class="form-select" id="feed_type" name="feed_type" required>
+                                <option value="">Yem türü seçin</option>
+                                <option value="hay">Kuru Ot</option>
+                                <option value="silage">Silaj</option>
+                                <option value="concentrate">Konsantre Yem</option>
+                                <option value="grain">Tahıl</option>
+                                <option value="pasture">Mera</option>
+                                <option value="mixed">Karışık Yem</option>
+                                <option value="other">Diğer</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Yem türü seçilmelidir.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6 mb-3">
+                            <label for="filter_animal_type" class="form-label">Hayvan Türü Filtresi</label>
+                            <select class="form-select" id="filter_animal_type" name="filter_animal_type">
+                                <option value="">Tüm hayvan türleri</option>
+                                {% for animal_type in animal_types %}
+                                    <option value="{{ animal_type.id }}">{{ animal_type.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="filter_group" class="form-label">Grup Filtresi</label>
+                            <select class="form-select" id="filter_group" name="filter_group">
+                                <option value="">Tüm gruplar</option>
+                                {% for group in animal_groups %}
+                                    <option value="{{ group.id }}">{{ group.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="select_all" name="select_all">
+                                <label class="form-check-label" for="select_all">
+                                    <strong>Tüm hayvanları seç</strong>
+                                </label>
+                            </div>
+                            
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover table-bordered" id="animals-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="5%">Seç</th>
+                                            <th width="10%">Küpe No</th>
+                                            <th width="15%">Tür</th>
+                                            <th width="15%">Irk</th>
+                                            <th width="10%">Cinsiyet</th>
+                                            <th width="15%">Yaş</th>
+                                            <th width="10%">Grup</th>
+                                            <th width="20%">Miktar (kg)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for animal in animals %}
+                                            <tr data-animal-type="{{ animal.animal_type.id }}" data-animal-group="{{ animal.groups.first.id|default:'0' }}">
+                                                <td class="text-center">
+                                                    <input class="form-check-input animal-checkbox" type="checkbox" 
+                                                           name="selected_animals" value="{{ animal.id }}">
+                                                </td>
+                                                <td>{{ animal.tag_number }}</td>
+                                                <td>{{ animal.animal_type.name }}</td>
+                                                <td>{{ animal.breed.name }}</td>
+                                                <td>
+                                                    {% if animal.gender == 'M' %}
+                                                        <i class="fas fa-mars text-primary"></i> Erkek
+                                                    {% else %}
+                                                        <i class="fas fa-venus text-danger"></i> Dişi
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ animal.get_age_display }}</td>
+                                                <td>{{ animal.groups.first.name|default:"-" }}</td>
+                                                <td>
+                                                    <input type="number" step="0.1" min="0" class="form-control form-control-sm feed-amount"
+                                                           name="amount_{{ animal.id }}" data-animal-id="{{ animal.id }}" 
+                                                           placeholder="Miktar girin">
+                                                </td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="8" class="text-center">
+                                                    <div class="alert alert-info mb-0">
+                                                        Besleme kaydı eklenecek hayvan bulunamadı.
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="notes" class="form-label">Notlar</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                      placeholder="Besleme hakkında ek bilgiler..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="submit-button">
+                            <i class="fas fa-save me-2"></i>Besleme Kayıtlarını Ekle
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form doğrulama
+        const form = document.getElementById('bulk-feeding-form');
+        
+        form.addEventListener('submit', function(event) {
+            // En az bir hayvan seçili mi kontrol et
+            const selectedAnimals = document.querySelectorAll('.animal-checkbox:checked');
+            
+            if (selectedAnimals.length === 0) {
+                event.preventDefault();
+                alert('Lütfen en az bir hayvan seçin.');
+                return;
+            }
+            
+            // Seçili hayvanların besleme miktarları dolu mu kontrol et
+            let isValid = true;
+            selectedAnimals.forEach(function(checkbox) {
+                const animalId = checkbox.value;
+                const amountInput = document.querySelector(`input[name="amount_${animalId}"]`);
+                
+                if (!amountInput.value || parseFloat(amountInput.value) <= 0) {
+                    isValid = false;
+                    amountInput.classList.add('is-invalid');
+                } else {
+                    amountInput.classList.remove('is-invalid');
+                }
+            });
+            
+            if (!isValid) {
+                event.preventDefault();
+                alert('Lütfen seçili tüm hayvanlar için besleme miktarı girin.');
+            }
+        });
+        
+        // Tümünü seç/kaldır
+        const selectAllCheckbox = document.getElementById('select_all');
+        const animalCheckboxes = document.querySelectorAll('.animal-checkbox');
+        
+        selectAllCheckbox.addEventListener('change', function() {
+            const isChecked = this.checked;
+            
+            animalCheckboxes.forEach(function(checkbox) {
+                const row = checkbox.closest('tr');
+                
+                // Filtre kontrolü
+                if (row.style.display !== 'none') {
+                    checkbox.checked = isChecked;
+                }
+            });
+        });
+        
+        // Hayvan türü filtresi
+        const filterAnimalType = document.getElementById('filter_animal_type');
+        const filterGroup = document.getElementById('filter_group');
+        
+        function applyFilters() {
+            const selectedType = filterAnimalType.value;
+            const selectedGroup = filterGroup.value;
+            
+            animalCheckboxes.forEach(function(checkbox) {
+                const row = checkbox.closest('tr');
+                const rowType = row.getAttribute('data-animal-type');
+                const rowGroup = row.getAttribute('data-animal-group');
+                
+                let showRow = true;
+                
+                if (selectedType && rowType !== selectedType) {
+                    showRow = false;
+                }
+                
+                if (selectedGroup && rowGroup !== selectedGroup) {
+                    showRow = false;
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            });
+            
+            // "Tümünü seç" kutusunu sıfırla
+            selectAllCheckbox.checked = false;
+        }
+        
+        filterAnimalType.addEventListener('change', applyFilters);
+        filterGroup.addEventListener('change', applyFilters);
+        
+        // Toplu yem miktarı atama
+        const bulkAmountBtn = document.createElement('button');
+        bulkAmountBtn.textContent = 'Toplu Miktar Ata';
+        bulkAmountBtn.className = 'btn btn-sm btn-outline-primary ms-2';
+        bulkAmountBtn.type = 'button';
+        
+        const bulkAmountInput = document.createElement('input');
+        bulkAmountInput.type = 'number';
+        bulkAmountInput.step = '0.1';
+        bulkAmountInput.min = '0';
+        bulkAmountInput.className = 'form-control form-control-sm d-inline-block';
+        bulkAmountInput.style.width = '100px';
+        bulkAmountInput.placeholder = 'Miktar';
+        
+        const bulkAmountContainer = document.createElement('div');
+        bulkAmountContainer.className = 'd-flex align-items-center mt-2';
+        bulkAmountContainer.appendChild(bulkAmountInput);
+        bulkAmountContainer.appendChild(bulkAmountBtn);
+        
+        const selectAllContainer = document.querySelector('label[for="select_all"]').parentNode;
+        selectAllContainer.parentNode.appendChild(bulkAmountContainer);
+        
+        bulkAmountBtn.addEventListener('click', function() {
+            const amount = bulkAmountInput.value;
+            
+            if (!amount || parseFloat(amount) <= 0) {
+                alert('Lütfen geçerli bir miktar girin.');
+                return;
+            }
+            
+            const selectedCheckboxes = document.querySelectorAll('.animal-checkbox:checked');
+            
+            if (selectedCheckboxes.length === 0) {
+                alert('Lütfen en az bir hayvan seçin.');
+                return;
+            }
+            
+            selectedCheckboxes.forEach(function(checkbox) {
+                const animalId = checkbox.value;
+                const amountInput = document.querySelector(`input[name="amount_${animalId}"]`);
+                amountInput.value = amount;
+            });
+        });
+    });
+</script>
+{% endblock %} 

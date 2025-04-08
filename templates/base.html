@@ -34,7 +34,7 @@
                                     <li><a class="dropdown-item" href="{% url 'arazi:land_create' %}">Yeni Arazi Ekle</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><h6 class="dropdown-header">Toprak Analizleri</h6></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:arazi_soilanalysis_changelist' %}">Analizler</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'arazi:soil_analysis_list' %}">Analizler</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -62,13 +62,16 @@
                                     <li><a class="dropdown-item" href="{% url 'hayvan:animal_create' %}">Yeni Hayvan Ekle</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><h6 class="dropdown-header">Temel Kayıtlar</h6></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:hayvan_animaltype_changelist' %}">Hayvan Türleri</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:hayvan_animalbreed_changelist' %}">Hayvan Irkları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'hayvan:animal_type_list' %}">Hayvan Türleri</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'hayvan:animal_breed_list' %}">Hayvan Irkları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'hayvan:animal_group_list' %}">Hayvan Grupları</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Diğer İşlemler</h6></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:hayvan_healthrecord_changelist' %}">Sağlık Kayıtları</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:hayvan_reproductionrecord_changelist' %}">Üreme Kayıtları</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:hayvan_birth_changelist' %}">Doğum Kayıtları</a></li>
+                                    <li><h6 class="dropdown-header">Kayıtlar</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'hayvan:health_record_list' %}">Sağlık Kayıtları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'hayvan:bulk_feeding' %}">Toplu Besleme</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">İstatistikler</h6></li>
+                                    <li><a class="dropdown-item" href="{% url 'hayvan:herd_statistics' %}">Sürü İstatistikleri</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -89,16 +92,16 @@
                                     <i class="fas fa-chart-line me-1"></i>Finans
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="{% url 'admin:finans_transaction_changelist' %}">Gelir/Gider İşlemleri</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:finans_invoice_changelist' %}">Faturalar</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'finans:transaction_list' %}">Gelir/Gider İşlemleri</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'finans:invoice_list' %}">Faturalar</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><h6 class="dropdown-header">Hesap Yönetimi</h6></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:finans_bankaccount_changelist' %}">Banka Hesapları</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:finans_accountcategory_changelist' %}">Hesap Kategorileri</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:finans_customer_changelist' %}">Müşteriler</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'finans:bank_account_list' %}">Banka Hesapları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'finans:account_category_list' %}">Hesap Kategorileri</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'finans:customer_list' %}">Müşteriler</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><h6 class="dropdown-header">Bütçe</h6></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:finans_budget_changelist' %}">Bütçe Planları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'finans:budget_list' %}">Bütçe Planları</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">
@@ -106,20 +109,20 @@
                                     <i class="fas fa-tasks me-1"></i>Görevler
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="{% url 'admin:gorev_task_changelist' %}">Tüm Görevler</a></li>
-                                    <li><a class="dropdown-item" href="#">Görev Takvimi</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'gorev:task_list' %}">Tüm Görevler</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'gorev:task_calendar' %}">Görev Takvimi</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><h6 class="dropdown-header">Ekip Yönetimi</h6></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:gorev_worker_changelist' %}">Çalışanlar</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:gorev_worklog_changelist' %}">Çalışma Kayıtları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'gorev:worker_list' %}">Çalışanlar</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'gorev:worklog_list' %}">Çalışma Kayıtları</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><h6 class="dropdown-header">Ekipman</h6></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:gorev_equipment_changelist' %}">Ekipmanlar</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:gorev_maintenanceschedule_changelist' %}">Bakım Programları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'gorev:equipment_list' %}">Ekipmanlar</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'gorev:maintenance_list' %}">Bakım Programları</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">
+                                <a class="nav-link" href="{% url 'analitik:dashboard' %}">
                                     <i class="fas fa-chart-pie me-1"></i>Analitik
                                 </a>
                             </li>
@@ -133,7 +136,7 @@
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-end">
                                     <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profilim</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="fas fa-cog me-2"></i>Yönetim Paneli</a></li>
+                                    <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Ayarlar</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Çıkış</a></li>
                                 </ul>
