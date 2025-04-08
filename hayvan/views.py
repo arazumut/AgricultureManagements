@@ -128,7 +128,17 @@ def animal_create(request):
     else:
         form = AnimalForm()
     
-    return render(request, 'hayvan/animal_form.html', {'form': form})
+    # Get all animal types and breeds for the form
+    animal_types = AnimalType.objects.all().order_by('name')
+    animal_breeds = AnimalBreed.objects.none()  # Initially empty
+    
+    context = {
+        'form': form,
+        'animal_types': animal_types,
+        'animal_breeds': animal_breeds,
+    }
+    
+    return render(request, 'hayvan/animal_form.html', context)
 
 @login_required
 def animal_update(request, pk):
@@ -344,19 +354,22 @@ def herd_statistics(request):
     return render(request, 'hayvan/herd_statistics.html', context)
 
 @require_GET
+@login_required
 def load_breeds(request):
-    """AJAX isteği ile hayvan ırklarını yükler"""
-    animal_type_id = request.GET.get('animal_type_id')
+    """
+    AJAX view to load breeds for a selected animal type
+    """
+    animal_type_id = request.GET.get('animal_type')
     
     if not animal_type_id:
-        return JsonResponse({'breeds': []})
+        return JsonResponse({'error': 'Hayvan türü belirtilmedi'}, status=400)
     
     try:
         breeds = AnimalBreed.objects.filter(animal_type_id=animal_type_id).order_by('name')
-        breeds_data = [{'id': breed.id, 'name': breed.name} for breed in breeds]
-        return JsonResponse({'breeds': breeds_data})
-    except (ValueError, AnimalBreed.DoesNotExist):
-        return JsonResponse({'breeds': []})
+        data = [{'id': breed.id, 'name': breed.name} for breed in breeds]
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
 def animal_type_list(request):

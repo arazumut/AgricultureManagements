@@ -64,15 +64,8 @@
                             
                             <div class="mb-3">
                                 <label for="breed" class="form-label">Hayvan Irkı <span class="text-danger">*</span></label>
-                                <select class="form-select" id="breed" name="breed" required>
-                                    <option value="">Irk Seçin</option>
-                                    {% for breed in animal_breeds %}
-                                        <option value="{{ breed.id }}" 
-                                                {% if animal.breed.id == breed.id %}selected{% endif %}
-                                                data-animal-type="{{ breed.animal_type.id }}">
-                                            {{ breed.name }}
-                                        </option>
-                                    {% endfor %}
+                                <select class="form-select" id="breed" name="breed" required disabled>
+                                    <option value="">Önce hayvan türü seçin</option>
                                 </select>
                                 <div class="invalid-feedback">
                                     Hayvan ırkı seçilmelidir.
@@ -206,54 +199,64 @@
                 form.classList.add('was-validated');
             }, false);
         });
-        
-        // Hayvan türü ve ırk seçimi için AJAX işlemleri
+
+        // Hayvan türü ve ırk seçimleri
         const animalTypeSelect = document.getElementById('animal_type');
         const breedSelect = document.getElementById('breed');
         
-        function updateBreeds() {
-            const animalTypeId = animalTypeSelect.value;
-            
-            // Seçilen tür yoksa ırk seçimini temizle
-            if (!animalTypeId) {
-                breedSelect.innerHTML = '<option value="">Irk Seçin</option>';
-                return;
-            }
-            
-            // AJAX isteği ile ırkları getir
-            fetch(`/hayvan/ajax/load-breeds/?animal_type_id=${animalTypeId}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Irk seçimini temizle
-                    breedSelect.innerHTML = '<option value="">Irk Seçin</option>';
-                    
-                    // Yeni ırkları ekle
-                    data.breeds.forEach(breed => {
-                        const option = document.createElement('option');
-                        option.value = breed.id;
-                        option.textContent = breed.name;
-                        breedSelect.appendChild(option);
-                    });
-                    
-                    // Eğer düzenleme modundaysak ve önceden seçili bir ırk varsa, onu seç
-                    {% if animal %}
-                        const selectedBreedId = '{{ animal.breed.id }}';
-                        if (selectedBreedId) {
-                            breedSelect.value = selectedBreedId;
-                        }
-                    {% endif %}
-                })
-                .catch(error => {
-                    console.error('Irk yükleme hatası:', error);
-                });
-        }
-        
         // Hayvan türü değiştiğinde ırkları güncelle
-        animalTypeSelect.addEventListener('change', updateBreeds);
-        
-        // Sayfa yüklendiğinde ırkları güncelle
+        animalTypeSelect.addEventListener('change', function() {
+            const animalTypeId = this.value;
+            
+            // Önce ırk seçimini temizle ve devre dışı bırak
+            breedSelect.innerHTML = '<option value="">Önce hayvan türü seçin</option>';
+            breedSelect.disabled = true;
+            
+            if (animalTypeId) {
+                // Yükleniyor mesajı göster
+                breedSelect.innerHTML = '<option value="">Irklar yükleniyor...</option>';
+                
+                // Seçilen türe ait ırkları getir
+                fetch(`/hayvan/irklar/yukle/?animal_type=${animalTypeId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Sunucu hatası: ' + response.status);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.length > 0) {
+                            breedSelect.innerHTML = '<option value="">Irk Seçin</option>';
+                            data.forEach(breed => {
+                                const option = document.createElement('option');
+                                option.value = breed.id;
+                                option.textContent = breed.name;
+                                breedSelect.appendChild(option);
+                            });
+                            breedSelect.disabled = false;
+                        } else {
+                            breedSelect.innerHTML = '<option value="">Bu tür için ırk bulunamadı</option>';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Hata:', error);
+                        breedSelect.innerHTML = '<option value="">Irklar yüklenemedi. Lütfen sayfayı yenileyin.</option>';
+                        // Kullanıcıya hata mesajı göster
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-2';
+                        alertDiv.innerHTML = `
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Hayvan ırkları yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        `;
+                        breedSelect.parentNode.insertBefore(alertDiv, breedSelect.nextSibling);
+                    });
+            }
+        });
+
+        // Sayfa yüklendiğinde, eğer bir hayvan türü seçiliyse ırkları yükle
         if (animalTypeSelect.value) {
-            updateBreeds();
+            animalTypeSelect.dispatchEvent(new Event('change'));
         }
     });
 </script>

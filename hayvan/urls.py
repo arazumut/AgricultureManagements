@@ -4,6 +4,13 @@ from . import views
 app_name = 'hayvan'
 
 urlpatterns = [
+    # Hayvan yönetimi
+    path('', views.animal_list, name='animal_list'),
+    path('ekle/', views.animal_create, name='animal_create'),
+    path('<int:pk>/', views.animal_detail, name='animal_detail'),
+    path('<int:pk>/duzenle/', views.animal_update, name='animal_update'),
+    path('<int:pk>/sil/', views.animal_delete, name='animal_delete'),
+    
     # Hayvan türü yönetimi
     path('turler/', views.animal_type_list, name='animal_type_list'),
     path('turler/ekle/', views.animal_type_create, name='animal_type_create'),
@@ -16,34 +23,26 @@ urlpatterns = [
     path('irklar/<int:pk>/duzenle/', views.animal_breed_update, name='animal_breed_update'),
     path('irklar/<int:pk>/sil/', views.animal_breed_delete, name='animal_breed_delete'),
     
-    # Hayvan grubu yönetimi
+    # AJAX istekleri
+    path('irklar/yukle/', views.load_breeds, name='load_breeds'),
+    
+    # Sağlık kayıtları
+    path('<int:animal_id>/saglik/ekle/', views.health_record_create, name='health_record_create'),
+    
+    # Üreme kayıtları
+    path('<int:animal_id>/ureme/ekle/', views.reproduction_record_create, name='reproduction_record_create'),
+    
+    # Doğum kayıtları
+    path('<int:animal_id>/dogum/ekle/', views.birth_record_create, name='birth_record_create'),
+    path('<int:animal_id>/ureme/<int:reproduction_id>/dogum/ekle/', views.birth_record_create, name='birth_record_create_with_reproduction'),
+    
+    # Besleme kayıtları
+    path('<int:animal_id>/besleme/ekle/', views.feeding_create, name='feeding_create'),
+    path('gruplar/<int:group_id>/besleme/ekle/', views.feeding_create, name='group_feeding_create'),
+    
+    # Grup yönetimi
     path('gruplar/', views.animal_group_list, name='animal_group_list'),
     path('gruplar/ekle/', views.animal_group_create, name='animal_group_create'),
     path('gruplar/<int:pk>/duzenle/', views.animal_group_update, name='animal_group_update'),
     path('gruplar/<int:pk>/sil/', views.animal_group_delete, name='animal_group_delete'),
-    
-    # Hayvan işlemleri
-    path('', views.animal_list, name='animal_list'),
-    path('<int:pk>/', views.animal_detail, name='animal_detail'),
-    path('ekle/', views.animal_create, name='animal_create'),
-    path('<int:pk>/duzenle/', views.animal_update, name='animal_update'),
-    path('<int:pk>/sil/', views.animal_delete, name='animal_delete'),
-    
-    # Sağlık kayıtları
-    path('<int:animal_id>/saglik-kaydi/ekle/', views.health_record_create, name='health_record_create'),
-    
-    # Üreme kayıtları
-    path('<int:animal_id>/ureme-kaydi/ekle/', views.reproduction_record_create, name='reproduction_record_create'),
-    
-    # Doğum kayıtları
-    path('<int:animal_id>/dogum-kaydi/ekle/', views.birth_record_create, name='birth_record_create'),
-    path('<int:animal_id>/dogum-kaydi/ekle/<int:reproduction_id>/', views.birth_record_create, name='birth_record_create_from_reproduction'),
-    
-    # Besleme kayıtları
-    path('<int:animal_id>/besleme-kaydi/ekle/', views.feeding_create, name='feeding_create'),
-    path('grup/<int:group_id>/besleme-kaydi/ekle/', views.feeding_create, name='group_feeding_create'),
-    
-    # İstatistikler ve raporlar
-    path('istatistikler/', views.herd_statistics, name='herd_statistics'),
-    path('ajax/load-breeds/', views.load_breeds, name='ajax_load_breeds'),
 ] 
