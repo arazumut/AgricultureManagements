@@ -1,3 +1,6 @@
+# Author: Umut Araz
+# Date: 2025-04-08
+
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count, Avg
@@ -24,12 +27,12 @@ def dashboard(request):
     thirty_days_ago = datetime.now() - timedelta(days=30)
     income = Transaction.objects.filter(
         transaction_type='income', 
-        date__gte=thirty_days_ago
+        transaction_date__gte=thirty_days_ago
     ).aggregate(total=Sum('amount'))['total'] or 0
     
     expense = Transaction.objects.filter(
         transaction_type='expense', 
-        date__gte=thirty_days_ago
+        transaction_date__gte=thirty_days_ago
     ).aggregate(total=Sum('amount'))['total'] or 0
     
     # Son hasatları al
@@ -42,7 +45,7 @@ def dashboard(request):
     
     # Doğum istatistikleri
     birth_count = Birth.objects.count()
-    avg_litter_size = Birth.objects.aggregate(avg=Avg('litter_size'))['avg'] or 0
+    avg_litter_size = Birth.objects.aggregate(avg=Avg('offspring_count'))['avg'] or 0
     
     context = {
         'animal_count': animal_count,

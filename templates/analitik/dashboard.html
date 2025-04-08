@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block title %}Analitik Paneli - TarımHayTakip{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-chart-pie me-2"></i>Analitik Paneli
+            </h1>
+        </div>
+    </div>
+</div>
+
+<!-- Özet Kartları -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-cow text-primary" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Toplam Hayvan</h6>
+                        <h3 class="mb-0">{{ animal_count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-tractor text-success" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Toplam Arazi</h6>
+                        <h3 class="mb-0">{{ land_count }} Arazi</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-chart-line text-danger" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Parsel Sayısı</h6>
+                        <h3 class="mb-0">{{ parcel_count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="me-3">
+                        <i class="fas fa-seedling text-info" style="font-size: 2rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-1">Toplam Ürün</h6>
+                        <h3 class="mb-0">{{ product_count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Finans Durumu -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Son 30 Gün Finansal Özet</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h6 class="text-muted">Toplam Gelir</h6>
+                            <h3 class="text-success">{{ income }} ₺</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h6 class="text-muted">Toplam Gider</h6>
+                            <h3 class="text-danger">{{ expense }} ₺</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h6 class="text-muted">Net Kar/Zarar</h6>
+                            <h3 class="{% if net >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ net }} ₺
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sağlık Kayıtları ve Doğum İstatistikleri -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Sağlık Kayıtları İstatistikleri</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>İşlem Tipi</th>
+                                <th class="text-end">Sayı</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for stat in health_stats %}
+                                <tr>
+                                    <td>
+                                        {% if stat.procedure_type == 'examination' %}
+                                            <i class="fas fa-stethoscope me-2 text-primary"></i>Muayene
+                                        {% elif stat.procedure_type == 'vaccine' %}
+                                            <i class="fas fa-syringe me-2 text-success"></i>Aşı
+                                        {% elif stat.procedure_type == 'treatment' %}
+                                            <i class="fas fa-pills me-2 text-warning"></i>Tedavi
+                                        {% elif stat.procedure_type == 'surgery' %}
+                                            <i class="fas fa-procedures me-2 text-danger"></i>Ameliyat
+                                        {% else %}
+                                            <i class="fas fa-notes-medical me-2 text-secondary"></i>Diğer
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{{ stat.count }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="2" class="text-center">Henüz sağlık kaydı bulunmuyor</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Doğum İstatistikleri</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="text-center mb-4">
+                            <h6 class="text-muted">Toplam Doğum</h6>
+                            <h3>{{ birth_count }}</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="text-center mb-4">
+                            <h6 class="text-muted">Ortalama Yavru</h6>
+                            <h3>{{ avg_litter_size|floatformat:1 }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Son Hasatlar -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Son Hasatlar</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Ürün</th>
+                                <th>Hasat Tarihi</th>
+                                <th>Miktar</th>
+                                <th>Verim</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for harvest in recent_harvests %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'uretim:harvest_detail' harvest.id %}">
+                                            {{ harvest.planting.product.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ harvest.harvest_date|date:"d.m.Y" }}</td>
+                                    <td>{{ harvest.quantity }} {{ harvest.unit }}</td>
+                                    <td>
+                                        {% if harvest.planting.area %}
+                                            {{ harvest.yield_per_area|floatformat:2 }} {{ harvest.unit }}/dekar
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Henüz hasat kaydı bulunmuyor</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

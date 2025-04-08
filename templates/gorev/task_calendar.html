@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}Görev Takvimi - TarımHayTakip{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-calendar-alt me-2"></i>Görev Takvimi
+            </h1>
+            <a href="{% url 'gorev:task_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-list me-2"></i>Görev Listesine Dön
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Görev Takvimi</h5>
+                    <div>
+                        <a href="{% url 'gorev:task_list' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-list me-1"></i>Liste Görünümü
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="calendar"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css">
+<style>
+    .fc-event {
+        cursor: pointer;
+    }
+    .priority-low {
+        border-left: 5px solid #28a745;
+    }
+    .priority-medium {
+        border-left: 5px solid #ffc107;
+    }
+    .priority-high {
+        border-left: 5px solid #fd7e14;
+    }
+    .priority-urgent {
+        border-left: 5px solid #dc3545;
+    }
+    .status-not_started {
+        opacity: 0.8;
+    }
+    .status-in_progress {
+        font-weight: bold;
+    }
+    .status-completed {
+        text-decoration: line-through;
+        opacity: 0.6;
+    }
+    .status-cancelled {
+        opacity: 0.5;
+    }
+    .status-delayed {
+        border-style: dashed !important;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/tr.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            locale: 'tr',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay,listMonth'
+            },
+            initialView: 'dayGridMonth',
+            themeSystem: 'bootstrap5',
+            selectable: true,
+            nowIndicator: true,
+            dayMaxEvents: true,
+            events: [
+                {% for task in tasks %}
+                {
+                    id: '{{ task.id }}',
+                    title: '{{ task.title|escapejs }}',
+                    start: '{{ task.planned_start_date|date:"Y-m-d" }}',
+                    end: '{{ task.planned_end_date|date:"Y-m-d" }}',
+                    allDay: true,
+                    url: '{% url "admin:gorev_task_change" task.id %}',
+                    classNames: [
+                        'priority-{{ task.priority }}',
+                        'status-{{ task.status }}'
+                    ],
+                    extendedProps: {
+                        status: '{{ task.get_status_display }}',
+                        priority: '{{ task.get_priority_display }}',
+                        category: '{% if task.category %}{{ task.category.name|escapejs }}{% else %}Kategorisiz{% endif %}',
+                        completion: '{{ task.completion_percentage }}%'
+                    }
+                }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            eventClick: function(info) {
+                if (info.event.url) {
+                    window.location.href = info.event.url;
+                    info.jsEvent.preventDefault();
+                }
+            },
+            eventDidMount: function(info) {
+                const tooltip = new bootstrap.Tooltip(info.el, {
+                    title: `${info.event.title}<br>
+                            Durum: ${info.event.extendedProps.status}<br>
+                            Öncelik: ${info.event.extendedProps.priority}<br>
+                            Kategori: ${info.event.extendedProps.category}<br>
+                            Tamamlanma: ${info.event.extendedProps.completion}`,
+                    placement: 'top',
+                    trigger: 'hover',
+                    html: true,
+                    customClass: 'fc-tooltip'
+                });
+            }
+        });
+        
+        calendar.render();
+    });
+</script>
+{% endblock %} 

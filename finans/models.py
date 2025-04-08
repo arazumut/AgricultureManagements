@@ -1,3 +1,6 @@
+# Author: Umut Araz
+# Date: 2025-04-08
+
 from django.db import models
 from django.contrib.auth.models import User
 from stok.models import InventoryItem

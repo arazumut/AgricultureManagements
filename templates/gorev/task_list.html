@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}Görevler - TarımHayTakip{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-tasks me-2"></i>Görevler
+            </h1>
+            <div>
+                <a href="{% url 'gorev:task_calendar' %}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-calendar-alt me-2"></i>Takvim Görünümü
+                </a>
+                <a href="{% url 'admin:gorev_task_add' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Yeni Görev
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Arama</label>
+                        <input type="text" name="search" id="search" class="form-control" 
+                               placeholder="Görev adı, açıklama..." value="{{ request.GET.search|default:'' }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Durum</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">Tüm Durumlar</option>
+                            <option value="not_started" {% if request.GET.status == 'not_started' %}selected{% endif %}>Başlamadı</option>
+                            <option value="in_progress" {% if request.GET.status == 'in_progress' %}selected{% endif %}>Devam Ediyor</option>
+                            <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Tamamlandı</option>
+                            <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>İptal Edildi</option>
+                            <option value="delayed" {% if request.GET.status == 'delayed' %}selected{% endif %}>Ertelendi</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="priority" class="form-label">Öncelik</label>
+                        <select name="priority" id="priority" class="form-select">
+                            <option value="">Tüm Öncelikler</option>
+                            <option value="low" {% if request.GET.priority == 'low' %}selected{% endif %}>Düşük</option>
+                            <option value="medium" {% if request.GET.priority == 'medium' %}selected{% endif %}>Orta</option>
+                            <option value="high" {% if request.GET.priority == 'high' %}selected{% endif %}>Yüksek</option>
+                            <option value="urgent" {% if request.GET.priority == 'urgent' %}selected{% endif %}>Acil</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-2"></i>Filtrele
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Başlık</th>
+                                <th>Kategori</th>
+                                <th>Durum</th>
+                                <th>Öncelik</th>
+                                <th>Planlanan Tarih</th>
+                                <th>İlerleme</th>
+                                <th width="120">İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'admin:gorev_task_change' task.id %}">{{ task.title }}</a>
+                                    </td>
+                                    <td>{{ task.category.name|default:"-" }}</td>
+                                    <td>
+                                        {% if task.status == 'not_started' %}
+                                            <span class="badge bg-secondary">Başlamadı</span>
+                                        {% elif task.status == 'in_progress' %}
+                                            <span class="badge bg-primary">Devam Ediyor</span>
+                                        {% elif task.status == 'completed' %}
+                                            <span class="badge bg-success">Tamamlandı</span>
+                                        {% elif task.status == 'cancelled' %}
+                                            <span class="badge bg-danger">İptal Edildi</span>
+                                        {% elif task.status == 'delayed' %}
+                                            <span class="badge bg-warning">Ertelendi</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if task.priority == 'low' %}
+                                            <span class="badge bg-success">Düşük</span>
+                                        {% elif task.priority == 'medium' %}
+                                            <span class="badge bg-info">Orta</span>
+                                        {% elif task.priority == 'high' %}
+                                            <span class="badge bg-warning">Yüksek</span>
+                                        {% elif task.priority == 'urgent' %}
+                                            <span class="badge bg-danger">Acil</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>
+                                            <strong>Başlangıç:</strong> {{ task.planned_start_date|date:"d.m.Y" }}<br>
+                                            <strong>Bitiş:</strong> {{ task.planned_end_date|date:"d.m.Y" }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar {% if task.completion_percentage == 100 %}bg-success{% endif %}" 
+                                                 role="progressbar" style="width: {{ task.completion_percentage }}%;" 
+                                                 aria-valuenow="{{ task.completion_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ task.completion_percentage }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'admin:gorev_task_change' task.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'admin:gorev_task_delete' task.id %}" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">
+                                        <div class="alert alert-info mb-0">
+                                            Henüz hiç görev bulunmuyor. <a href="{% url 'admin:gorev_task_add' %}">Yeni bir görev ekle</a>.
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

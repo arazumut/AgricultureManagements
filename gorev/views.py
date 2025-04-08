@@ -8,7 +8,7 @@ from .models import Task, Worker, WorkLog, Equipment, MaintenanceSchedule
 @login_required
 def task_list(request):
     """Görevleri listeler"""
-    tasks = Task.objects.all().order_by('-due_date')
+    tasks = Task.objects.all().order_by('-planned_end_date')
     return render(request, 'gorev/task_list.html', {
         'tasks': tasks
     })
@@ -16,7 +16,7 @@ def task_list(request):
 @login_required
 def task_calendar(request):
     """Görev takvimini gösterir"""
-    tasks = Task.objects.all().order_by('due_date')
+    tasks = Task.objects.all().order_by('planned_end_date')
     return render(request, 'gorev/task_calendar.html', {
         'tasks': tasks
     })
@@ -24,7 +24,7 @@ def task_calendar(request):
 @login_required
 def worker_list(request):
     """Çalışanları listeler"""
-    workers = Worker.objects.all().order_by('name')
+    workers = Worker.objects.all().order_by('last_name', 'first_name')
     return render(request, 'gorev/worker_list.html', {
         'workers': workers
     })

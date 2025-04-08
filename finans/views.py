@@ -8,7 +8,7 @@ from .models import Transaction, Invoice, BankAccount, AccountCategory, Customer
 @login_required
 def transaction_list(request):
     """Finans işlemlerini listeler"""
-    transactions = Transaction.objects.all().order_by('-date')
+    transactions = Transaction.objects.all().order_by('-transaction_date')
     return render(request, 'finans/transaction_list.html', {
         'transactions': transactions
     })
@@ -16,9 +16,20 @@ def transaction_list(request):
 @login_required
 def invoice_list(request):
     """Faturaları listeler"""
-    invoices = Invoice.objects.all().order_by('-date')
+    invoices = Invoice.objects.all().order_by('-invoice_date')
     return render(request, 'finans/invoice_list.html', {
         'invoices': invoices
+    })
+
+@login_required
+def invoice_create(request):
+    """Yeni fatura oluşturur"""
+    if request.method == 'POST':
+        # Form işleme mantığı burada olacak
+        messages.success(request, 'Fatura başarıyla oluşturuldu.')
+        return redirect('finans:invoice_list')
+    return render(request, 'finans/invoice_form.html', {
+        'title': 'Yeni Fatura Oluştur'
     })
 
 @login_required

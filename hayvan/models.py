@@ -7,6 +7,9 @@ from django.urls import reverse
 from datetime import timedelta
 from django.db.models import Count, Sum, Avg
 
+# Author: Umut Araz
+# Date: 2025-04-08
+
 class AnimalType(models.Model):
     """Model for animal types"""
     name = models.CharField(max_length=100, verbose_name="Tür Adı")

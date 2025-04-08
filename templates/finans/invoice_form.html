@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ title }} - TarımHayTakip
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-receipt me-2"></i>{{ title }}
+            </h1>
+            <a href="{% url 'finans:invoice_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Fatura Listesine Dön
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="invoice_type" class="form-label">Fatura Tipi *</label>
+                            <select class="form-select" id="invoice_type" name="invoice_type" required>
+                                <option value="">Fatura tipi seçin</option>
+                                <option value="purchase">Alış Faturası</option>
+                                <option value="sale">Satış Faturası</option>
+                            </select>
+                            <div class="invalid-feedback">
+                                Lütfen fatura tipi seçin.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="invoice_number" class="form-label">Fatura Numarası *</label>
+                            <input type="text" class="form-control" id="invoice_number" name="invoice_number" required>
+                            <div class="invalid-feedback">
+                                Lütfen fatura numarası girin.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="invoice_date" class="form-label">Fatura Tarihi *</label>
+                            <input type="date" class="form-control" id="invoice_date" name="invoice_date" required>
+                            <div class="invalid-feedback">
+                                Lütfen fatura tarihini girin.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="due_date" class="form-label">Son Ödeme Tarihi</label>
+                            <input type="date" class="form-control" id="due_date" name="due_date">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3 supplier-section">
+                        <div class="col-md-12">
+                            <label for="supplier" class="form-label">Tedarikçi *</label>
+                            <select class="form-select" id="supplier" name="supplier">
+                                <option value="">Tedarikçi seçin</option>
+                                {% for supplier in suppliers %}
+                                    <option value="{{ supplier.id }}">{{ supplier.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3 customer-section d-none">
+                        <div class="col-md-12">
+                            <label for="customer" class="form-label">Müşteri *</label>
+                            <select class="form-select" id="customer" name="customer">
+                                <option value="">Müşteri seçin</option>
+                                {% for customer in customers %}
+                                    <option value="{{ customer.id }}">{{ customer.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="bank_account" class="form-label">Hesap *</label>
+                            <select class="form-select" id="bank_account" name="bank_account" required>
+                                <option value="">Hesap seçin</option>
+                                {% for account in bank_accounts %}
+                                    <option value="{{ account.id }}">{{ account.name }} ({{ account.bank_name }})</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Lütfen hesap seçin.
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="category" class="form-label">Kategori</label>
+                            <select class="form-select" id="category" name="category">
+                                <option value="">Kategori seçin</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mb-3 mt-4">Fatura Kalemleri</h5>
+                    <div id="invoice-items">
+                        <div class="row mb-3 invoice-item">
+                            <div class="col-md-4">
+                                <label class="form-label">Açıklama *</label>
+                                <input type="text" class="form-control" name="descriptions[]" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Miktar *</label>
+                                <input type="number" min="0.01" step="0.01" class="form-control" name="quantities[]" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Birim Fiyat *</label>
+                                <input type="number" min="0.01" step="0.01" class="form-control unit-price" name="unit_prices[]" required>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">KDV (%)</label>
+                                <input type="number" min="0" max="100" step="0.01" class="form-control tax-rate" name="tax_rates[]" value="18">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Tutar</label>
+                                <input type="number" step="0.01" class="form-control line-total" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <button type="button" id="add-item" class="btn btn-outline-primary">
+                            <i class="fas fa-plus me-2"></i>Kalem Ekle
+                        </button>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label for="notes" class="form-label">Notlar</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="row justify-content-end">
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>Ara Toplam:</span>
+                                        <span id="subtotal">0.00 TL</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span>KDV Toplam:</span>
+                                        <span id="tax-total">0.00 TL</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <strong>Genel Toplam:</strong>
+                                        <strong id="grand-total">0.00 TL</strong>
+                                    </div>
+                                    
+                                    <input type="hidden" name="subtotal" id="subtotal-input">
+                                    <input type="hidden" name="tax_amount" id="tax-amount-input">
+                                    <input type="hidden" name="total_amount" id="total-amount-input">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'finans:invoice_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Faturayı Kaydet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form doğrulama
+        const form = document.querySelector('.needs-validation');
+        
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
+            form.classList.add('was-validated');
+        });
+        
+        // Fatura tipi değiştiğinde tedarikçi/müşteri alanlarını göster/gizle
+        const invoiceTypeSelect = document.getElementById('invoice_type');
+        const supplierSection = document.querySelector('.supplier-section');
+        const customerSection = document.querySelector('.customer-section');
+        
+        invoiceTypeSelect.addEventListener('change', function() {
+            if (this.value === 'purchase') {
+                supplierSection.classList.remove('d-none');
+                customerSection.classList.add('d-none');
+                document.getElementById('supplier').setAttribute('required', '');
+                document.getElementById('customer').removeAttribute('required');
+            } else if (this.value === 'sale') {
+                supplierSection.classList.add('d-none');
+                customerSection.classList.remove('d-none');
+                document.getElementById('supplier').removeAttribute('required');
+                document.getElementById('customer').setAttribute('required', '');
+            }
+        });
+        
+        // Kalem ekleme
+        const addItemButton = document.getElementById('add-item');
+        const invoiceItems = document.getElementById('invoice-items');
+        
+        addItemButton.addEventListener('click', function() {
+            const itemTemplate = document.querySelector('.invoice-item').cloneNode(true);
+            const inputs = itemTemplate.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.value = '';
+                if (input.classList.contains('tax-rate')) {
+                    input.value = '18'; // Varsayılan KDV
+                }
+            });
+            
+            // Hesaplama olaylarını ekle
+            attachCalculationEvents(itemTemplate);
+            
+            invoiceItems.appendChild(itemTemplate);
+        });
+        
+        // Hesaplama olaylarını ekle
+        function attachCalculationEvents(container) {
+            const quantityInput = container.querySelector('input[name="quantities[]"]');
+            const unitPriceInput = container.querySelector('input[name="unit_prices[]"]');
+            const taxRateInput = container.querySelector('input[name="tax_rates[]"]');
+            const lineTotalInput = container.querySelector('.line-total');
+            
+            function calculateLineTotal() {
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const unitPrice = parseFloat(unitPriceInput.value) || 0;
+                const taxRate = parseFloat(taxRateInput.value) || 0;
+                
+                const lineTotal = quantity * unitPrice * (1 + taxRate / 100);
+                lineTotalInput.value = lineTotal.toFixed(2);
+                
+                calculateTotals();
+            }
+            
+            quantityInput.addEventListener('input', calculateLineTotal);
+            unitPriceInput.addEventListener('input', calculateLineTotal);
+            taxRateInput.addEventListener('input', calculateLineTotal);
+        }
+        
+        // İlk kalem için hesaplama olaylarını ekle
+        document.querySelectorAll('.invoice-item').forEach(item => {
+            attachCalculationEvents(item);
+        });
+        
+        // Toplam hesapla
+        function calculateTotals() {
+            let subtotal = 0;
+            let taxTotal = 0;
+            
+            document.querySelectorAll('.invoice-item').forEach(item => {
+                const quantity = parseFloat(item.querySelector('input[name="quantities[]"]').value) || 0;
+                const unitPrice = parseFloat(item.querySelector('.unit-price').value) || 0;
+                const taxRate = parseFloat(item.querySelector('.tax-rate').value) || 0;
+                
+                const itemSubtotal = quantity * unitPrice;
+                const itemTax = itemSubtotal * taxRate / 100;
+                
+                subtotal += itemSubtotal;
+                taxTotal += itemTax;
+            });
+            
+            const grandTotal = subtotal + taxTotal;
+            
+            document.getElementById('subtotal').textContent = subtotal.toFixed(2) + ' TL';
+            document.getElementById('tax-total').textContent = taxTotal.toFixed(2) + ' TL';
+            document.getElementById('grand-total').textContent = grandTotal.toFixed(2) + ' TL';
+            
+            document.getElementById('subtotal-input').value = subtotal.toFixed(2);
+            document.getElementById('tax-amount-input').value = taxTotal.toFixed(2);
+            document.getElementById('total-amount-input').value = grandTotal.toFixed(2);
+        }
+    });
+</script>
+{% endblock %} 
