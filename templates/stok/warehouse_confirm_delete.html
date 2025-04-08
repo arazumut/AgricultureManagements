@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ warehouse.name }} - Depo Sil - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-trash me-2"></i>Depo Sil
+                        </h5>
+                        <a href="{% url 'stok:warehouse_list' %}" class="btn btn-light btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i>Depolara Dön
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>{{ warehouse.name }}</strong> adlı depoyu silmek üzeresiniz. Bu işlem geri alınamaz!
+                    </div>
+
+                    <div class="mb-4">
+                        <h6 class="fw-bold">Depo Bilgileri:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Adres:</strong> {{ warehouse.address|default:"Belirtilmemiş" }}</li>
+                            <li><strong>Sorumlu:</strong> {{ warehouse.manager|default:"Belirtilmemiş" }}</li>
+                            <li><strong>Telefon:</strong> {{ warehouse.phone|default:"Belirtilmemiş" }}</li>
+                            <li><strong>E-posta:</strong> {{ warehouse.email|default:"Belirtilmemiş" }}</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <h6 class="alert-heading fw-bold mb-2">Önemli Bilgiler:</h6>
+                        <ul class="mb-0">
+                            <li>Bu depoda {{ warehouse.inventory_items.count }} adet stok kalemi bulunuyor.</li>
+                            <li>Bu depoda {{ warehouse.locations.count }} adet konum tanımlı.</li>
+                            <li>Depoda stok kalemleri veya konumlar varsa silme işlemi gerçekleştirilemez.</li>
+                        </ul>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'stok:warehouse_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>İptal
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>Depoyu Sil
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

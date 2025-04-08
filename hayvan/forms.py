@@ -1,6 +1,6 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from .models import Animal, HealthRecord, ReproductionRecord, Birth, Offspring, AnimalType, AnimalBreed
+from .models import Animal, HealthRecord, ReproductionRecord, Birth, Offspring, AnimalType, AnimalBreed, AnimalGroup
 
 class AnimalForm(forms.ModelForm):
     """Form for creating and updating animal records"""
@@ -170,4 +170,73 @@ class OffspringForm(forms.ModelForm):
             
         # Add Bootstrap classes
         for field_name, field in self.fields.items():
-            field.widget.attrs['class'] = 'form-control' 
+            field.widget.attrs['class'] = 'form-control'
+
+class AnimalTypeForm(forms.ModelForm):
+    """Form for creating and updating animal types"""
+    
+    class Meta:
+        model = AnimalType
+        fields = ['name', 'description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Add Bootstrap classes
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+            
+        # Mark required fields
+        self.fields['name'].required = True
+
+class AnimalBreedForm(forms.ModelForm):
+    """Form for creating and updating animal breeds"""
+    
+    class Meta:
+        model = AnimalBreed
+        fields = ['animal_type', 'name', 'characteristics', 'description']
+        widgets = {
+            'characteristics': forms.Textarea(attrs={'rows': 3}),
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Add Bootstrap classes
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+            
+        # Mark required fields
+        for field_name in ['animal_type', 'name']:
+            self.fields[field_name].required = True
+            
+        # Hayvan türü seçeneklerini sırala
+        self.fields['animal_type'].queryset = AnimalType.objects.all().order_by('name')
+
+class AnimalGroupForm(forms.ModelForm):
+    """Form for creating and updating animal groups"""
+    
+    class Meta:
+        model = AnimalGroup
+        fields = ['name', 'description', 'animals']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+            'animals': forms.SelectMultiple(attrs={'class': 'form-select'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Add Bootstrap classes
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+            
+        # Mark required fields
+        self.fields['name'].required = True
+        
+        # Hayvan seçeneklerini sırala
+        self.fields['animals'].queryset = Animal.objects.all().order_by('tag_number') 

@@ -4,6 +4,24 @@ from . import views
 app_name = 'hayvan'
 
 urlpatterns = [
+    # Hayvan türü yönetimi
+    path('turler/', views.animal_type_list, name='animal_type_list'),
+    path('turler/ekle/', views.animal_type_create, name='animal_type_create'),
+    path('turler/<int:pk>/duzenle/', views.animal_type_update, name='animal_type_update'),
+    path('turler/<int:pk>/sil/', views.animal_type_delete, name='animal_type_delete'),
+    
+    # Hayvan ırkı yönetimi
+    path('irklar/', views.animal_breed_list, name='animal_breed_list'),
+    path('irklar/ekle/', views.animal_breed_create, name='animal_breed_create'),
+    path('irklar/<int:pk>/duzenle/', views.animal_breed_update, name='animal_breed_update'),
+    path('irklar/<int:pk>/sil/', views.animal_breed_delete, name='animal_breed_delete'),
+    
+    # Hayvan grubu yönetimi
+    path('gruplar/', views.animal_group_list, name='animal_group_list'),
+    path('gruplar/ekle/', views.animal_group_create, name='animal_group_create'),
+    path('gruplar/<int:pk>/duzenle/', views.animal_group_update, name='animal_group_update'),
+    path('gruplar/<int:pk>/sil/', views.animal_group_delete, name='animal_group_delete'),
+    
     # Hayvan işlemleri
     path('', views.animal_list, name='animal_list'),
     path('<int:pk>/', views.animal_detail, name='animal_detail'),

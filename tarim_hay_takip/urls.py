@@ -35,7 +35,7 @@ urlpatterns = [
     path('hayvan/', include('hayvan.urls', namespace='hayvan')),
     path('arazi/', include('arazi.urls', namespace='arazi')),
     path('uretim/', include('uretim.urls', namespace='uretim')),
-    # path('stok/', include('stok.urls')),
+    path('stok/', include('stok.urls', namespace='stok')),
     # path('finans/', include('finans.urls')),
     # path('gorev/', include('gorev.urls')),
     # path('analitik/', include('analitik.urls')),

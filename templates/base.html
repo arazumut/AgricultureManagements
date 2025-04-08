@@ -76,17 +76,12 @@
                                     <i class="fas fa-boxes me-1"></i>Stok
                                 </a>
                                 <ul class="dropdown-menu">
-                                    <li><a class="dropdown-item" href="{% url 'admin:stok_inventoryitem_changelist' %}">Stok Kalemleri</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:stok_stocktransaction_changelist' %}">Stok Hareketleri</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Temel Kayıtlar</h6></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:stok_category_changelist' %}">Kategoriler</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:stok_unitofmeasure_changelist' %}">Ölçü Birimleri</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:stok_supplier_changelist' %}">Tedarikçiler</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">Depo Yönetimi</h6></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:stok_warehouse_changelist' %}">Depolar</a></li>
-                                    <li><a class="dropdown-item" href="{% url 'admin:stok_inventorylocation_changelist' %}">Stok Konumları</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'stok:category_list' %}">Kategoriler</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'stok:supplier_list' %}">Tedarikçiler</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'stok:unit_list' %}">Ölçü Birimleri</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'stok:warehouse_list' %}">Depolar</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'stok:inventory_list' %}">Stok Kalemleri</a></li>
+                                    <li><a class="dropdown-item" href="{% url 'stok:transaction_list' %}">Stok Hareketleri</a></li>
                                 </ul>
                             </li>
                             <li class="nav-item dropdown">

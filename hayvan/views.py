@@ -8,7 +8,7 @@ from django.http import HttpResponse, JsonResponse
 from django.db import IntegrityError
 from django.utils.translation import gettext as _
 from .models import Animal, AnimalType, AnimalBreed, HealthRecord, ReproductionRecord, Birth, Feeding, AnimalGroup
-from .forms import AnimalForm, HealthRecordForm, ReproductionRecordForm, BirthForm
+from .forms import AnimalForm, HealthRecordForm, ReproductionRecordForm, BirthForm, AnimalTypeForm, AnimalBreedForm, AnimalGroupForm
 from datetime import datetime
 from django.views.decorators.http import require_GET
 
@@ -357,3 +357,192 @@ def load_breeds(request):
         return JsonResponse({'breeds': breeds_data})
     except (ValueError, AnimalBreed.DoesNotExist):
         return JsonResponse({'breeds': []})
+
+@login_required
+def animal_type_list(request):
+    """Hayvan türlerini listeler"""
+    animal_types = AnimalType.objects.all().order_by('name')
+    return render(request, 'hayvan/animal_type_list.html', {
+        'animal_types': animal_types
+    })
+
+@login_required
+def animal_type_create(request):
+    """Yeni hayvan türü oluşturur"""
+    if request.method == 'POST':
+        form = AnimalTypeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hayvan türü başarıyla oluşturuldu.')
+            return redirect('hayvan:animal_type_list')
+    else:
+        form = AnimalTypeForm()
+    
+    return render(request, 'hayvan/animal_type_form.html', {
+        'form': form,
+        'title': 'Yeni Hayvan Türü Ekle'
+    })
+
+@login_required
+def animal_type_update(request, pk):
+    """Hayvan türünü günceller"""
+    animal_type = get_object_or_404(AnimalType, pk=pk)
+    
+    if request.method == 'POST':
+        form = AnimalTypeForm(request.POST, instance=animal_type)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hayvan türü başarıyla güncellendi.')
+            return redirect('hayvan:animal_type_list')
+    else:
+        form = AnimalTypeForm(instance=animal_type)
+    
+    return render(request, 'hayvan/animal_type_form.html', {
+        'form': form,
+        'title': 'Hayvan Türünü Düzenle',
+        'animal_type': animal_type
+    })
+
+@login_required
+def animal_type_delete(request, pk):
+    """Hayvan türünü siler"""
+    animal_type = get_object_or_404(AnimalType, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            animal_type.delete()
+            messages.success(request, 'Hayvan türü başarıyla silindi.')
+            return redirect('hayvan:animal_type_list')
+        except Exception as e:
+            messages.error(request, f'Hayvan türü silinirken bir hata oluştu: {str(e)}')
+            return redirect('hayvan:animal_type_list')
+    
+    return render(request, 'hayvan/animal_type_confirm_delete.html', {
+        'animal_type': animal_type
+    })
+
+@login_required
+def animal_breed_list(request):
+    """Hayvan ırklarını listeler"""
+    animal_breeds = AnimalBreed.objects.all().order_by('animal_type__name', 'name')
+    return render(request, 'hayvan/animal_breed_list.html', {
+        'animal_breeds': animal_breeds
+    })
+
+@login_required
+def animal_breed_create(request):
+    """Yeni hayvan ırkı oluşturur"""
+    if request.method == 'POST':
+        form = AnimalBreedForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hayvan ırkı başarıyla oluşturuldu.')
+            return redirect('hayvan:animal_breed_list')
+    else:
+        form = AnimalBreedForm()
+    
+    return render(request, 'hayvan/animal_breed_form.html', {
+        'form': form,
+        'title': 'Yeni Hayvan Irkı Ekle'
+    })
+
+@login_required
+def animal_breed_update(request, pk):
+    """Hayvan ırkını günceller"""
+    animal_breed = get_object_or_404(AnimalBreed, pk=pk)
+    
+    if request.method == 'POST':
+        form = AnimalBreedForm(request.POST, instance=animal_breed)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hayvan ırkı başarıyla güncellendi.')
+            return redirect('hayvan:animal_breed_list')
+    else:
+        form = AnimalBreedForm(instance=animal_breed)
+    
+    return render(request, 'hayvan/animal_breed_form.html', {
+        'form': form,
+        'title': 'Hayvan Irkını Düzenle',
+        'animal_breed': animal_breed
+    })
+
+@login_required
+def animal_breed_delete(request, pk):
+    """Hayvan ırkını siler"""
+    animal_breed = get_object_or_404(AnimalBreed, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            animal_breed.delete()
+            messages.success(request, 'Hayvan ırkı başarıyla silindi.')
+            return redirect('hayvan:animal_breed_list')
+        except Exception as e:
+            messages.error(request, f'Hayvan ırkı silinirken bir hata oluştu: {str(e)}')
+            return redirect('hayvan:animal_breed_list')
+    
+    return render(request, 'hayvan/animal_breed_confirm_delete.html', {
+        'animal_breed': animal_breed
+    })
+
+@login_required
+def animal_group_list(request):
+    """Hayvan gruplarını listeler"""
+    animal_groups = AnimalGroup.objects.all().order_by('name')
+    return render(request, 'hayvan/animal_group_list.html', {
+        'animal_groups': animal_groups
+    })
+
+@login_required
+def animal_group_create(request):
+    """Yeni hayvan grubu oluşturur"""
+    if request.method == 'POST':
+        form = AnimalGroupForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hayvan grubu başarıyla oluşturuldu.')
+            return redirect('hayvan:animal_group_list')
+    else:
+        form = AnimalGroupForm()
+    
+    return render(request, 'hayvan/animal_group_form.html', {
+        'form': form,
+        'title': 'Yeni Hayvan Grubu Ekle'
+    })
+
+@login_required
+def animal_group_update(request, pk):
+    """Hayvan grubunu günceller"""
+    animal_group = get_object_or_404(AnimalGroup, pk=pk)
+    
+    if request.method == 'POST':
+        form = AnimalGroupForm(request.POST, instance=animal_group)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hayvan grubu başarıyla güncellendi.')
+            return redirect('hayvan:animal_group_list')
+    else:
+        form = AnimalGroupForm(instance=animal_group)
+    
+    return render(request, 'hayvan/animal_group_form.html', {
+        'form': form,
+        'title': 'Hayvan Grubunu Düzenle',
+        'animal_group': animal_group
+    })
+
+@login_required
+def animal_group_delete(request, pk):
+    """Hayvan grubunu siler"""
+    animal_group = get_object_or_404(AnimalGroup, pk=pk)
+    
+    if request.method == 'POST':
+        try:
+            animal_group.delete()
+            messages.success(request, 'Hayvan grubu başarıyla silindi.')
+            return redirect('hayvan:animal_group_list')
+        except Exception as e:
+            messages.error(request, f'Hayvan grubu silinirken bir hata oluştu: {str(e)}')
+            return redirect('hayvan:animal_group_list')
+    
+    return render(request, 'hayvan/animal_group_confirm_delete.html', {
+        'animal_group': animal_group
+    })

@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12 col-md-8 col-lg-6 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">{{ title }}: {{ category.name }}</h5>
+                        <a href="{% url 'category_list' %}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Geri Dön
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="alert alert-danger">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle"></i> Dikkat!
+                        </h5>
+                        <p class="mb-0">
+                            Bu kategoriyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+                            {% if category.subcategories.exists %}
+                            <br><br>
+                            <strong>Uyarı:</strong> Bu kategorinin alt kategorileri bulunmaktadır. Kategoriyi silmeden önce alt kategorileri başka bir kategoriye taşımanız veya silmeniz gerekmektedir.
+                            {% endif %}
+                        </p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Kategoriyi Sil
+                            </button>
+                            <a href="{% url 'category_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Vazgeç
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

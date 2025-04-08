@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {% if animal_breed %}{{ animal_breed.name }} - Düzenle{% else %}Yeni Hayvan Irkı Ekle{% endif %} - TarımHayTakip
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-dna me-2"></i>
+                {% if animal_breed %}{{ animal_breed.name }} - Düzenle{% else %}Yeni Hayvan Irkı Ekle{% endif %}
+            </h1>
+            <a href="{% url 'hayvan:animal_breed_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Listeye Dön
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="animal_type" class="form-label">Hayvan Türü <span class="text-danger">*</span></label>
+                            <select class="form-select" id="animal_type" name="animal_type" required>
+                                <option value="">Tür Seçin</option>
+                                {% for animal_type in animal_types %}
+                                    <option value="{{ animal_type.id }}" 
+                                            {% if animal_breed.animal_type.id == animal_type.id %}selected{% endif %}>
+                                        {{ animal_type.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Hayvan türü seçilmelidir.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Irk Adı <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" 
+                                   value="{{ animal_breed.name|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Irk adı zorunludur.
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="characteristics" class="form-label">Özellikler</label>
+                            <textarea class="form-control" id="characteristics" name="characteristics" 
+                                      rows="3">{{ animal_breed.characteristics|default:'' }}</textarea>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="description" class="form-label">Açıklama</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="3">{{ animal_breed.description|default:'' }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-outline-secondary me-2" onclick="history.back()">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if animal_breed %}Değişiklikleri Kaydet{% else %}Irkı Ekle{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Form doğrulama
+        const forms = document.querySelectorAll('.needs-validation');
+        
+        Array.from(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    });
+</script>
+{% endblock %} 

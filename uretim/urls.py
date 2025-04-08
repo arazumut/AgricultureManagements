@@ -32,4 +32,8 @@ urlpatterns = [
     # Hasat işlemleri
     path('hasatlar/', views.harvest_list, name='harvest_list'),
     path('ekimler/<int:planting_id>/hasat/ekle/', views.harvest_create, name='harvest_create'),
+
+    # İstatistikler ve Raporlar
+    path('istatistikler/', views.statistics, name='statistics'),
+    path('istatistikler/indir/', views.export_statistics, name='export_statistics'),
 ] 

@@ -2,10 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q, Sum
-from .models import Product, Seed, PlantingPlan, Planting, Harvest
+from django.db.models import Q, Sum, Avg
+from .models import Product, Seed, PlantingPlan, Planting, Harvest, MaintenanceRecord
 from arazi.models import Land, Parcel
 from .forms import ProductForm, SeedForm, PlantingPlanForm, PlantingForm, HarvestForm
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+import pandas as pd
+import io
+from datetime import datetime
 
 @login_required
 def product_list(request):
@@ -470,3 +476,220 @@ def harvest_list(request):
     }
     
     return render(request, 'uretim/harvest_list.html', context)
+
+def export_statistics(request):
+    format = request.GET.get('format', 'pdf')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    product_id = request.GET.get('product')
+    parcel_id = request.GET.get('parcel')
+
+    # Filtreleme
+    harvests = Harvest.objects.all()
+    if start_date:
+        harvests = harvests.filter(harvest_date__gte=start_date)
+    if end_date:
+        harvests = harvests.filter(harvest_date__lte=end_date)
+    if product_id:
+        harvests = harvests.filter(planting__product_id=product_id)
+    if parcel_id:
+        harvests = harvests.filter(planting__parcel_id=parcel_id)
+
+    # İstatistikleri hesapla
+    total_harvest_amount = harvests.aggregate(total=Sum('amount'))['total'] or 0
+    total_cost = harvests.aggregate(total=Sum('total_cost'))['total'] or 0
+    average_yield = harvests.aggregate(avg=Avg('yield_rate'))['avg'] or 0
+
+    if format == 'pdf':
+        template = get_template('uretim/statistics_pdf.html')
+        context = {
+            'harvests': harvests,
+            'total_harvest_amount': total_harvest_amount,
+            'total_cost': total_cost,
+            'average_yield': average_yield,
+            'start_date': start_date,
+            'end_date': end_date,
+        }
+        html = template.render(context)
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="uretim_raporu_{datetime.now().strftime("%Y%m%d")}.pdf"'
+        
+        pisa_status = pisa.CreatePDF(html, dest=response)
+        if pisa_status.err:
+            return HttpResponse('PDF oluşturulurken bir hata oluştu')
+        return response
+
+    elif format == 'excel':
+        # Excel için veri hazırla
+        data = []
+        for harvest in harvests:
+            data.append({
+                'Ürün': harvest.planting.product.name,
+                'Parsel': harvest.planting.parcel.name,
+                'Hasat Tarihi': harvest.harvest_date,
+                'Miktar': harvest.amount,
+                'Birim': harvest.get_unit_display(),
+                'Verim': harvest.yield_rate,
+                'Toplam Maliyet': harvest.total_cost,
+            })
+
+        df = pd.DataFrame(data)
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='Hasat Raporu', index=False)
+        
+        response = HttpResponse(output.getvalue(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = f'attachment; filename="uretim_raporu_{datetime.now().strftime("%Y%m%d")}.xlsx"'
+        return response
+
+    elif format == 'csv':
+        # CSV için veri hazırla
+        data = []
+        for harvest in harvests:
+            data.append({
+                'Ürün': harvest.planting.product.name,
+                'Parsel': harvest.planting.parcel.name,
+                'Hasat Tarihi': harvest.harvest_date,
+                'Miktar': harvest.amount,
+                'Birim': harvest.get_unit_display(),
+                'Verim': harvest.yield_rate,
+                'Toplam Maliyet': harvest.total_cost,
+            })
+
+        df = pd.DataFrame(data)
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="uretim_raporu_{datetime.now().strftime("%Y%m%d")}.csv"'
+        df.to_csv(response, index=False)
+        return response
+
+    return HttpResponse('Geçersiz format', status=400)
+
+@login_required
+def statistics(request):
+    """View to display production statistics and reports"""
+    # Get all lands belonging to the user
+    lands = Land.objects.filter(owner=request.user, is_active=True)
+    parcels = Parcel.objects.filter(land__in=lands, is_active=True)
+    plantings = Planting.objects.filter(parcel__in=parcels)
+    
+    # Get filter parameters
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    product_id = request.GET.get('product')
+    parcel_id = request.GET.get('parcel')
+    
+    # Base queryset
+    harvests = Harvest.objects.filter(planting__in=plantings)
+    
+    # Apply filters
+    if start_date:
+        harvests = harvests.filter(harvest_date__gte=start_date)
+    if end_date:
+        harvests = harvests.filter(harvest_date__lte=end_date)
+    if product_id:
+        harvests = harvests.filter(planting__product_id=product_id)
+    if parcel_id:
+        harvests = harvests.filter(planting__parcel_id=parcel_id)
+    
+    # Calculate general statistics
+    total_planting_area = plantings.aggregate(total=Sum('planting_area'))['total'] or 0
+    total_harvest_amount = harvests.aggregate(total=Sum('amount'))['total'] or 0
+    total_cost = harvests.aggregate(total=Sum('total_cost'))['total'] or 0
+    average_yield = harvests.aggregate(avg=Avg('yield_rate'))['avg'] or 0
+    
+    # Calculate product statistics
+    product_stats = []
+    products = Product.objects.filter(plantings__in=plantings).distinct()
+    for product in products:
+        product_harvests = harvests.filter(planting__product=product)
+        product_plantings = plantings.filter(product=product)
+        
+        stats = {
+            'product': product,
+            'planting_area': product_plantings.aggregate(total=Sum('planting_area'))['total'] or 0,
+            'harvest_amount': product_harvests.aggregate(total=Sum('amount'))['total'] or 0,
+            'total_cost': product_harvests.aggregate(total=Sum('total_cost'))['total'] or 0,
+            'average_yield': product_harvests.aggregate(avg=Avg('yield_rate'))['avg'] or 0,
+            'unit': product_harvests.first().get_unit_display() if product_harvests.exists() else '-',
+        }
+        
+        if stats['harvest_amount'] > 0:
+            stats['unit_cost'] = stats['total_cost'] / stats['harvest_amount']
+        else:
+            stats['unit_cost'] = 0
+            
+        product_stats.append(stats)
+    
+    # Calculate parcel statistics
+    parcel_stats = []
+    for parcel in parcels:
+        parcel_harvests = harvests.filter(planting__parcel=parcel)
+        parcel_plantings = plantings.filter(parcel=parcel)
+        
+        if parcel_harvests.exists():
+            stats = {
+                'parcel': parcel,
+                'product': parcel_harvests.first().planting.product,
+                'planting_area': parcel_plantings.aggregate(total=Sum('planting_area'))['total'] or 0,
+                'harvest_amount': parcel_harvests.aggregate(total=Sum('amount'))['total'] or 0,
+                'total_cost': parcel_harvests.aggregate(total=Sum('total_cost'))['total'] or 0,
+                'yield': parcel_harvests.aggregate(avg=Avg('yield_rate'))['avg'] or 0,
+                'unit': parcel_harvests.first().get_unit_display(),
+            }
+            parcel_stats.append(stats)
+    
+    # Calculate maintenance statistics
+    maintenance_stats = []
+    maintenance_types = dict(MaintenanceRecord.MAINTENANCE_TYPE_CHOICES)
+    for type_code, type_name in maintenance_types.items():
+        records = MaintenanceRecord.objects.filter(planting__in=plantings, maintenance_type=type_code)
+        if records.exists():
+            stats = {
+                'maintenance_type': type_code,
+                'get_maintenance_type_display': type_name,
+                'count': records.count(),
+                'total_cost': records.aggregate(total=Sum('total_cost'))['total'] or 0,
+                'average_cost': records.aggregate(avg=Avg('total_cost'))['avg'] or 0,
+                'total_area': records.aggregate(total=Sum('area'))['total'] or 0,
+            }
+            maintenance_stats.append(stats)
+    
+    # Calculate cost percentages
+    labor_cost = harvests.aggregate(total=Sum('labor_cost'))['total'] or 0
+    material_cost = harvests.aggregate(total=Sum('material_cost'))['total'] or 0
+    equipment_cost = harvests.aggregate(total=Sum('equipment_cost'))['total'] or 0
+    
+    if total_cost > 0:
+        labor_cost_percentage = (labor_cost / total_cost) * 100
+        material_cost_percentage = (material_cost / total_cost) * 100
+        equipment_cost_percentage = (equipment_cost / total_cost) * 100
+    else:
+        labor_cost_percentage = material_cost_percentage = equipment_cost_percentage = 0
+    
+    # Get all products and parcels for filter dropdowns
+    all_products = Product.objects.filter(is_active=True)
+    all_parcels = parcels
+    
+    context = {
+        'total_planting_area': total_planting_area,
+        'total_harvest_amount': total_harvest_amount,
+        'total_cost': total_cost,
+        'average_yield': average_yield,
+        'product_stats': product_stats,
+        'parcel_stats': parcel_stats,
+        'maintenance_stats': maintenance_stats,
+        'labor_cost': labor_cost,
+        'material_cost': material_cost,
+        'equipment_cost': equipment_cost,
+        'labor_cost_percentage': labor_cost_percentage,
+        'material_cost_percentage': material_cost_percentage,
+        'equipment_cost_percentage': equipment_cost_percentage,
+        'products': all_products,
+        'parcels': all_parcels,
+        'selected_product': product_id,
+        'selected_parcel': parcel_id,
+        'start_date': start_date,
+        'end_date': end_date,
+    }
+    
+    return render(request, 'uretim/statistics.html', context)

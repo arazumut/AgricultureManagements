@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ harvest.planting.product.name }} - {{ harvest.harvest_date }} Hasadı - TarımHayTakip
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-harvest me-2"></i>
+                {{ harvest.planting.product.name }} - {{ harvest.harvest_date|date:"d.m.Y" }} Hasadı
+            </h1>
+            <div class="btn-group">
+                <a href="{% url 'uretim:harvest_update' harvest.pk %}" class="btn btn-outline-primary">
+                    <i class="fas fa-edit me-2"></i>Düzenle
+                </a>
+                <a href="{% url 'uretim:harvest_delete' harvest.pk %}" class="btn btn-outline-danger">
+                    <i class="fas fa-trash me-2"></i>Sil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Temel Bilgiler -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Temel Bilgiler
+                </h5>
+                <hr>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="mb-1"><strong>Ürün:</strong></p>
+                        <p class="mb-1"><strong>Parsel:</strong></p>
+                        <p class="mb-1"><strong>Hasat Tarihi:</strong></p>
+                        <p class="mb-1"><strong>Durum:</strong></p>
+                    </div>
+                    <div class="col-6">
+                        <p class="mb-1">{{ harvest.planting.product.name }}</p>
+                        <p class="mb-1">{{ harvest.planting.parcel.name }}</p>
+                        <p class="mb-1">{{ harvest.harvest_date|date:"d.m.Y" }}</p>
+                        <p class="mb-1">
+                            <span class="badge {% if harvest.status == 'completed' %}bg-success{% elif harvest.status == 'in_progress' %}bg-info{% else %}bg-secondary{% endif %}">
+                                {{ harvest.get_status_display }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hasat Detayları -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-list me-2"></i>
+                    Hasat Detayları
+                </h5>
+                <hr>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="mb-1"><strong>Miktar:</strong></p>
+                        <p class="mb-1"><strong>Birim:</strong></p>
+                        <p class="mb-1"><strong>Verim Oranı:</strong></p>
+                        <p class="mb-1"><strong>Oluşturulma:</strong></p>
+                    </div>
+                    <div class="col-6">
+                        <p class="mb-1">{{ harvest.amount }}</p>
+                        <p class="mb-1">{{ harvest.get_unit_display }}</p>
+                        <p class="mb-1">{{ harvest.yield_rate|default:"-" }}%</p>
+                        <p class="mb-1">{{ harvest.created_at|date:"d.m.Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Kalite Bilgileri -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-award me-2"></i>
+                    Kalite Bilgileri
+                </h5>
+                <hr>
+                <div class="row">
+                    <div class="col-6">
+                        <p class="mb-1"><strong>Kalite:</strong></p>
+                        <p class="mb-1"><strong>Nem Oranı:</strong></p>
+                        <p class="mb-1"><strong>Hasat Yöntemi:</strong></p>
+                        <p class="mb-1"><strong>Son Güncelleme:</strong></p>
+                    </div>
+                    <div class="col-6">
+                        <p class="mb-1">
+                            <span class="badge {% if harvest.quality == 'excellent' %}bg-success{% elif harvest.quality == 'good' %}bg-info{% elif harvest.quality == 'fair' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {{ harvest.get_quality_display }}
+                            </span>
+                        </p>
+                        <p class="mb-1">{{ harvest.moisture_rate|default:"-" }}%</p>
+                        <p class="mb-1">{{ harvest.get_harvest_method_display }}</p>
+                        <p class="mb-1">{{ harvest.updated_at|date:"d.m.Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hasat Ekibi -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Hasat Ekibi
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if harvest.workers.all %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Ad Soyad</th>
+                                    <th>Görev</th>
+                                    <th>Çalışma Saati</th>
+                                    <th>Ücret</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for worker in harvest.workers.all %}
+                                    <tr>
+                                        <td>{{ worker.name }}</td>
+                                        <td>{{ worker.role|default:"-" }}</td>
+                                        <td>{{ worker.work_hours|default:"-" }} saat</td>
+                                        <td>{{ worker.payment|default:"-" }} TL</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Henüz hasat ekibi bilgisi eklenmemiş.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hasat Maliyetleri -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-money-bill-wave me-2"></i>
+                    Hasat Maliyetleri
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">İşçilik Maliyeti</h6>
+                                <h3 class="text-primary">{{ harvest.labor_cost|default:"0" }} TL</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Ekipman Maliyeti</h6>
+                                <h3 class="text-primary">{{ harvest.equipment_cost|default:"0" }} TL</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Toplam Maliyet</h6>
+                                <h3 class="text-primary">{{ harvest.total_cost|default:"0" }} TL</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notlar -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-sticky-note me-2"></i>
+                    Notlar
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if harvest.notes %}
+                    <p>{{ harvest.notes|linebreaks }}</p>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Henüz not eklenmemiş.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

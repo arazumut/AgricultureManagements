@@ -152,3 +152,42 @@ class Harvest(models.Model):
         if self.harvest_amount and self.planting.planting_area and self.planting.planting_area > 0:
             self.yield_rate = self.harvest_amount / self.planting.planting_area
         super().save(*args, **kwargs)
+
+class MaintenanceRecord(models.Model):
+    MAINTENANCE_TYPE_CHOICES = [
+        ('sulama', 'Sulama'),
+        ('gubreleme', 'Gübreleme'),
+        ('ilaclama', 'İlaçlama'),
+        ('yabancı_ot', 'Yabancı Ot Temizliği'),
+        ('toprak_hazirligi', 'Toprak Hazırlığı'),
+        ('diger', 'Diğer'),
+    ]
+
+    planting = models.ForeignKey(Planting, on_delete=models.CASCADE, related_name='maintenance_records')
+    maintenance_type = models.CharField(max_length=20, choices=MAINTENANCE_TYPE_CHOICES)
+    maintenance_date = models.DateField()
+    area = models.DecimalField(max_digits=10, decimal_places=2, help_text='Bakım yapılan alan (dekar)')
+    weather_condition = models.CharField(max_length=100, blank=True)
+    temperature = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    fertilizer = models.CharField(max_length=100, blank=True)
+    pesticide = models.CharField(max_length=100, blank=True)
+    water_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text='Su miktarı (m³)')
+    labor_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    material_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    equipment_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-maintenance_date']
+        verbose_name = 'Bakım Kaydı'
+        verbose_name_plural = 'Bakım Kayıtları'
+
+    def __str__(self):
+        return f"{self.get_maintenance_type_display()} - {self.maintenance_date}"
+
+    def save(self, *args, **kwargs):
+        self.total_cost = self.labor_cost + self.material_cost + self.equipment_cost
+        super().save(*args, **kwargs)

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ unit.name }} - Sil{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3">{{ unit.name }} - Sil</h1>
+        </div>
+        <div class="col text-end">
+            <a href="{% url 'stok:unit_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Geri Dön
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="alert alert-danger">
+                        <h4 class="alert-heading">Dikkat!</h4>
+                        <p>Bu ölçü birimini silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+                        <hr>
+                        <p class="mb-0">Bu birime ait ürünler varsa silme işlemi başarısız olacaktır.</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="text-end">
+                            <a href="{% url 'stok:unit_list' %}" class="btn btn-secondary">İptal</a>
+                            <button type="submit" class="btn btn-danger">Sil</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -57,13 +57,14 @@ class StockTransactionAdmin(admin.ModelAdmin):
 
 @admin.register(Warehouse)
 class WarehouseAdmin(admin.ModelAdmin):
-    list_display = ['name', 'location', 'is_active']
+    list_display = ['name', 'address', 'manager', 'phone', 'is_active']
     list_filter = ['is_active']
-    search_fields = ['name', 'location', 'description']
+    search_fields = ['name', 'address', 'manager', 'phone', 'email', 'description']
     inlines = [InventoryLocationInline]
     fieldsets = [
-        ('Temel Bilgiler', {'fields': ['name', 'location', 'is_active', 'owner']}),
-        ('Diğer', {'fields': ['description']}),
+        ('Temel Bilgiler', {'fields': ['name', 'description', 'is_active', 'owner']}),
+        ('Konum ve Kapasite', {'fields': ['address', 'capacity']}),
+        ('İletişim Bilgileri', {'fields': ['manager', 'phone', 'email']}),
     ]
 
 @admin.register(InventoryLocation)

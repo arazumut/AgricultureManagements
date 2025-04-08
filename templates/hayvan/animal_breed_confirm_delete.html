@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    {{ animal_breed.name }} - Sil - TarımHayTakip
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="h2">
+                <i class="fas fa-dna me-2"></i>
+                {{ animal_breed.name }} - Sil
+            </h1>
+            <a href="{% url 'hayvan:animal_breed_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Listeye Dön
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h4 class="alert-heading">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Dikkat!
+                    </h4>
+                    <p>
+                        <strong>{{ animal_breed.name }}</strong> ırkını silmek üzeresiniz. Bu işlem geri alınamaz!
+                    </p>
+                    <hr>
+                    <p class="mb-0">
+                        Bu ırka ait <strong>{{ animal_breed.animals.count }}</strong> hayvan kaydı bulunmaktadır.
+                    </p>
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'hayvan:animal_breed_list' %}" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-times me-2"></i>İptal
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-2"></i>Sil
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

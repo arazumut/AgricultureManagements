@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if form.instance.pk %}Ölçü Birimi Düzenle{% else %}Yeni Ölçü Birimi{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3">
+                {% if form.instance.pk %}Ölçü Birimi Düzenle{% else %}Yeni Ölçü Birimi{% endif %}
+            </h1>
+        </div>
+        <div class="col text-end">
+            <a href="{% url 'stok:unit_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Geri Dön
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row mb-4">
+        <div class="col">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.name.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.abbreviation.id_for_label }}" class="form-label">{{ form.abbreviation.label }}</label>
+                            {{ form.abbreviation }}
+                            {% if form.abbreviation.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.abbreviation.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">
+                                {% if form.instance.pk %}Güncelle{% else %}Kaydet{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

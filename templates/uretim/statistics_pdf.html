@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Üretim Raporu</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .header {
+            margin-bottom: 30px;
+        }
+        .info {
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f5f5f5;
+        }
+        .summary {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+        }
+        .footer {
+            margin-top: 50px;
+            text-align: right;
+            font-size: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Üretim Raporu</h1>
+        <div class="info">
+            <p><strong>Tarih Aralığı:</strong> {{ start_date|default:"-" }} - {{ end_date|default:"-" }}</p>
+            <p><strong>Rapor Tarihi:</strong> {% now "d.m.Y" %}</p>
+        </div>
+    </div>
+
+    <div class="summary">
+        <h2>Genel Özet</h2>
+        <p><strong>Toplam Hasat Miktarı:</strong> {{ total_harvest_amount }}</p>
+        <p><strong>Toplam Maliyet:</strong> {{ total_cost }} TL</p>
+        <p><strong>Ortalama Verim:</strong> {{ average_yield }}%</p>
+    </div>
+
+    <h2>Hasat Detayları</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Ürün</th>
+                <th>Parsel</th>
+                <th>Hasat Tarihi</th>
+                <th>Miktar</th>
+                <th>Birim</th>
+                <th>Verim</th>
+                <th>Toplam Maliyet</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for harvest in harvests %}
+                <tr>
+                    <td>{{ harvest.planting.product.name }}</td>
+                    <td>{{ harvest.planting.parcel.name }}</td>
+                    <td>{{ harvest.harvest_date|date:"d.m.Y" }}</td>
+                    <td>{{ harvest.amount }}</td>
+                    <td>{{ harvest.get_unit_display }}</td>
+                    <td>{{ harvest.yield_rate }}%</td>
+                    <td>{{ harvest.total_cost }} TL</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Bu rapor TarımHayTakip sistemi tarafından oluşturulmuştur.</p>
+        <p>Sayfa {% block page_number %}{% endblock %}</p>
+    </div>
+</body>
+</html> 

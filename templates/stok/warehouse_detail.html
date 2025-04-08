@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ warehouse.name }} - Depo Detayı - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">
+            <i class="fas fa-warehouse text-warning me-2"></i>{{ warehouse.name }}
+            {% if not warehouse.is_active %}
+                <span class="badge bg-secondary ms-2">Pasif</span>
+            {% endif %}
+        </h1>
+        <div class="btn-group">
+            <a href="{% url 'stok:warehouse_list' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Depolara Dön
+            </a>
+            <a href="{% url 'stok:warehouse_update' warehouse.pk %}" class="btn btn-warning">
+                <i class="fas fa-edit me-2"></i>Düzenle
+            </a>
+            <a href="{% url 'stok:warehouse_delete' warehouse.pk %}" class="btn btn-danger">
+                <i class="fas fa-trash me-2"></i>Sil
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <!-- Depo Bilgileri -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Depo Bilgileri
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>Adres:</strong><br>
+                            {{ warehouse.address|default:"Belirtilmemiş"|linebreaks }}
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-user text-primary me-2"></i>
+                            <strong>Sorumlu:</strong><br>
+                            {{ warehouse.manager|default:"Belirtilmemiş" }}
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            <strong>Telefon:</strong><br>
+                            {{ warehouse.phone|default:"Belirtilmemiş" }}
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <strong>E-posta:</strong><br>
+                            {{ warehouse.email|default:"Belirtilmemiş" }}
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas fa-ruler text-primary me-2"></i>
+                            <strong>Kapasite:</strong><br>
+                            {{ warehouse.capacity|default:"0" }} m²
+                        </li>
+                        <li>
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            <strong>Oluşturulma:</strong><br>
+                            {{ warehouse.created_at|date:"d.m.Y H:i" }}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Depo Konumları -->
+        <div class="col-md-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-map me-2"></i>Depo Konumları
+                        </h5>
+                        <a href="#" class="btn btn-light btn-sm">
+                            <i class="fas fa-plus me-2"></i>Yeni Konum
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if locations %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Konum Kodu</th>
+                                        <th>Açıklama</th>
+                                        <th>Kapasite</th>
+                                        <th>Durum</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for location in locations %}
+                                        <tr>
+                                            <td>{{ location.code }}</td>
+                                            <td>{{ location.description|default:"-" }}</td>
+                                            <td>{{ location.capacity|default:"0" }} m²</td>
+                                            <td>
+                                                {% if location.is_active %}
+                                                    <span class="badge bg-success">Aktif</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Pasif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="#" class="btn btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="#" class="btn btn-outline-warning">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="#" class="btn btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Bu depoda henüz hiç konum tanımlanmamış.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Stok Kalemleri -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-boxes me-2"></i>Stok Kalemleri
+                        </h5>
+                        <a href="#" class="btn btn-light btn-sm">
+                            <i class="fas fa-plus me-2"></i>Yeni Stok Kalemi
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if inventory_items %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Ürün Kodu</th>
+                                        <th>Ürün Adı</th>
+                                        <th>Kategori</th>
+                                        <th>Miktar</th>
+                                        <th>Birim</th>
+                                        <th>Konum</th>
+                                        <th>Durum</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in inventory_items %}
+                                        <tr>
+                                            <td>{{ item.code }}</td>
+                                            <td>{{ item.name }}</td>
+                                            <td>{{ item.category.name }}</td>
+                                            <td>{{ item.quantity }}</td>
+                                            <td>{{ item.unit.symbol }}</td>
+                                            <td>{{ item.location.code|default:"-" }}</td>
+                                            <td>
+                                                {% if item.is_active %}
+                                                    <span class="badge bg-success">Aktif</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Pasif</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="#" class="btn btn-outline-primary">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a href="#" class="btn btn-outline-warning">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a href="#" class="btn btn-outline-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Bu depoda henüz hiç stok kalemi bulunmuyor.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

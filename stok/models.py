@@ -151,11 +151,14 @@ class StockTransaction(models.Model):
 class Warehouse(models.Model):
     """Storage locations model"""
     name = models.CharField(max_length=100, verbose_name="Depo Adı")
-    location = models.CharField(max_length=200, blank=True, null=True, verbose_name="Konum")
     description = models.TextField(blank=True, null=True, verbose_name="Açıklama")
+    address = models.TextField(blank=True, null=True, verbose_name="Adres")
+    capacity = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Kapasite (m²)")
+    manager = models.CharField(max_length=100, blank=True, null=True, verbose_name="Sorumlu")
+    phone = models.CharField(max_length=20, blank=True, null=True, verbose_name="Telefon")
+    email = models.EmailField(blank=True, null=True, verbose_name="E-posta")
     is_active = models.BooleanField(default=True, verbose_name="Aktif")
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="warehouses", 
-                             verbose_name="Sahip")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="warehouses", verbose_name="Sahip")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Eklenme Tarihi")
     
     def __str__(self):
