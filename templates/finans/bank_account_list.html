@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Banka Hesapları{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Banka Hesapları</h3>
+                    <div class="card-tools">
+                        <a href="{% url 'finans:bank_account_create' %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Yeni Hesap
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Hesap Adı</th>
+                                    <th>Banka</th>
+                                    <th>Hesap No</th>
+                                    <th>IBAN</th>
+                                    <th>Bakiye</th>
+                                    <th>Para Birimi</th>
+                                    <th>Durum</th>
+                                    <th>İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for account in bank_accounts %}
+                                <tr>
+                                    <td>{{ account.name }}</td>
+                                    <td>{{ account.bank_name }}</td>
+                                    <td>{{ account.account_number }}</td>
+                                    <td>{{ account.iban }}</td>
+                                    <td>{{ account.balance }} {{ account.currency }}</td>
+                                    <td>{{ account.currency }}</td>
+                                    <td>
+                                        {% if account.is_active %}
+                                        <span class="badge badge-success">Aktif</span>
+                                        {% else %}
+                                        <span class="badge badge-danger">Pasif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'finans:bank_account_update' account.pk %}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'finans:bank_account_delete' account.pk %}" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center">Henüz banka hesabı kaydı bulunmuyor.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% if is_paginated %}
+                <div class="card-footer">
+                    <nav aria-label="Sayfalama">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Önceki</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                            <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Sonraki</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -6,14 +6,22 @@ from django.contrib.auth.models import User
 from stok.models import InventoryItem
 from hayvan.models import Animal
 from uretim.models import Harvest
+from django.utils import timezone
 
 class AccountCategory(models.Model):
     """Model for account/transaction categories"""
+    CATEGORY_TYPE_CHOICES = [
+        ('income', 'Gelir'),
+        ('expense', 'Gider'),
+        ('other', 'Diğer'),
+    ]
+    
     name = models.CharField(max_length=100, verbose_name="Kategori Adı")
-    is_income = models.BooleanField(verbose_name="Gelir mi?")
-    is_expense = models.BooleanField(verbose_name="Gider mi?")
-    is_active = models.BooleanField(default=True, verbose_name="Aktif")
+    category_type = models.CharField(max_length=10, choices=CATEGORY_TYPE_CHOICES, default='expense', verbose_name="Kategori Tipi")
     description = models.TextField(blank=True, null=True, verbose_name="Açıklama")
+    is_active = models.BooleanField(default=True, verbose_name="Aktif")
+    created_at = models.DateTimeField(auto_now_add=True, null=True, verbose_name="Oluşturulma Tarihi")
+    updated_at = models.DateTimeField(auto_now=True, null=True, verbose_name="Güncellenme Tarihi")
     
     def __str__(self):
         return self.name
@@ -36,6 +44,7 @@ class Customer(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="customers", verbose_name="Sahibi")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Eklenme Tarihi")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Güncelleme Tarihi")
+
     
     def __str__(self):
         return self.name

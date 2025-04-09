@@ -192,20 +192,29 @@ class WorkLog(models.Model):
     """Model for tracking work hours on tasks"""
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="work_logs", verbose_name="Görev")
     worker = models.ForeignKey(Worker, on_delete=models.CASCADE, related_name="work_logs", verbose_name="Çalışan")
-    date = models.DateField(verbose_name="Tarih")
-    start_time = models.TimeField(verbose_name="Başlangıç Saati")
-    end_time = models.TimeField(verbose_name="Bitiş Saati")
-    hours_worked = models.DecimalField(max_digits=5, decimal_places=2, verbose_name="Çalışılan Saat")
-    description = models.TextField(blank=True, null=True, verbose_name="Açıklama")
+    start_time = models.DateTimeField(verbose_name="Başlangıç Zamanı")
+    end_time = models.DateTimeField(verbose_name="Bitiş Zamanı")
+    payment = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Ücret")
+    is_paid = models.BooleanField(default=False, verbose_name="Ödendi mi?")
+    notes = models.TextField(blank=True, null=True, verbose_name="Notlar")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Eklenme Tarihi")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Güncelleme Tarihi")
+    
+    @property
+    def duration(self):
+        """Çalışma süresini saat cinsinden hesaplar"""
+        if self.start_time and self.end_time:
+            diff = self.end_time - self.start_time
+            return round(diff.total_seconds() / 3600, 2)
+        return 0
     
     def __str__(self):
-        return f"{self.worker} - {self.task.title} - {self.date}"
+        return f"{self.worker} - {self.task.title} - {self.start_time.strftime('%d.%m.%Y %H:%M')}"
     
     class Meta:
         verbose_name = "Çalışma Kaydı"
         verbose_name_plural = "Çalışma Kayıtları"
-        ordering = ['-date', '-start_time']
+        ordering = ['-start_time']
 
 class MaintenanceSchedule(models.Model):
     """Model for equipment maintenance scheduling"""

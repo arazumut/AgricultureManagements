@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ekipmanı Sil{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Ekipmanı Sil</h3>
+                </div>
+                <div class="card-body">
+                    <p>Bu ekipmanı silmek istediğinizden emin misiniz?</p>
+                    <div class="alert alert-warning">
+                        <strong>Ekipman Adı:</strong> {{ equipment.name }}<br>
+                        <strong>Tip:</strong> {{ equipment.equipment_type }}<br>
+                        <strong>Model:</strong> {{ equipment.model|default:"-" }}<br>
+                        <strong>Üretici:</strong> {{ equipment.manufacturer|default:"-" }}
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Evet, Sil</button>
+                        <a href="{% url 'gorev:equipment_list' %}" class="btn btn-secondary">İptal</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

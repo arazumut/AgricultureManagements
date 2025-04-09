@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.core.paginator import Paginator
 from .models import Transaction, Invoice, BankAccount, AccountCategory, Customer, Budget
+from .forms import AccountCategoryForm
 
 # Create your views here.
 
@@ -43,10 +45,45 @@ def bank_account_list(request):
 @login_required
 def account_category_list(request):
     """Hesap kategorilerini listeler"""
-    account_categories = AccountCategory.objects.all().order_by('name')
-    return render(request, 'finans/account_category_list.html', {
-        'account_categories': account_categories
-    })
+    categories = AccountCategory.objects.all()
+    paginator = Paginator(categories, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request, 'finans/account_category_list.html', {'categories': page_obj, 'is_paginated': True})
+
+@login_required
+def account_category_create(request):
+    if request.method == 'POST':
+        form = AccountCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hesap kategorisi başarıyla oluşturuldu.')
+            return redirect('finans:account_category_list')
+    else:
+        form = AccountCategoryForm()
+    return render(request, 'finans/account_category_form.html', {'form': form})
+
+@login_required
+def account_category_update(request, pk):
+    category = get_object_or_404(AccountCategory, pk=pk)
+    if request.method == 'POST':
+        form = AccountCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Hesap kategorisi başarıyla güncellendi.')
+            return redirect('finans:account_category_list')
+    else:
+        form = AccountCategoryForm(instance=category)
+    return render(request, 'finans/account_category_form.html', {'form': form})
+
+@login_required
+def account_category_delete(request, pk):
+    category = get_object_or_404(AccountCategory, pk=pk)
+    if request.method == 'POST':
+        category.delete()
+        messages.success(request, 'Hesap kategorisi başarıyla silindi.')
+        return redirect('finans:account_category_list')
+    return render(request, 'finans/account_category_confirm_delete.html', {'category': category})
 
 @login_required
 def customer_list(request):

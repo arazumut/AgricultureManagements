@@ -71,10 +71,15 @@ class TaskCommentAdmin(admin.ModelAdmin):
 
 @admin.register(WorkLog)
 class WorkLogAdmin(admin.ModelAdmin):
-    list_display = ['task', 'worker', 'date', 'start_time', 'end_time', 'hours_worked']
-    list_filter = ['date', 'worker']
-    search_fields = ['task__title', 'worker__first_name', 'worker__last_name', 'description']
-    date_hierarchy = 'date'
+    list_display = ['task', 'worker', 'start_time', 'end_time', 'duration', 'payment', 'is_paid']
+    list_filter = ['start_time', 'worker', 'is_paid']
+    search_fields = ['task__title', 'worker__first_name', 'worker__last_name', 'notes']
+    date_hierarchy = 'start_time'
+    fieldsets = [
+        ('Temel Bilgiler', {'fields': ['task', 'worker', 'start_time', 'end_time']}),
+        ('Ödeme Bilgileri', {'fields': ['payment', 'is_paid']}),
+        ('Diğer', {'fields': ['notes']}),
+    ]
 
 @admin.register(MaintenanceSchedule)
 class MaintenanceScheduleAdmin(admin.ModelAdmin):
