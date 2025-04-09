@@ -4,7 +4,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from .models import Land, Parcel, SoilAnalysis, IrrigationRecord
 from .forms import LandForm, ParcelForm, SoilAnalysisForm, IrrigationRecordForm
@@ -226,8 +226,29 @@ def irrigation_record_create(request, land_id, parcel_id):
 
 @login_required
 def soil_analysis_list(request):
-    """Toprak analizlerini listeler"""
-    soil_analyses = SoilAnalysis.objects.all().order_by('-analysis_date')
-    return render(request, 'arazi/soil_analysis_list.html', {
-        'soil_analyses': soil_analyses
-    })
+    search_query = request.GET.get('search', '')
+    
+    soil_analyses = SoilAnalysis.objects.select_related('parcel', 'parcel__land')
+    
+    if search_query:
+        soil_analyses = soil_analyses.filter(
+            Q(parcel__parcel_no__icontains=search_query) |
+            Q(parcel__land__name__icontains=search_query) |
+            Q(laboratory__icontains=search_query)
+        )
+    
+    paginator = Paginator(soil_analyses.order_by('-analysis_date'), 15)
+    page_number = request.GET.get('page', 1)
+    
+    try:
+        page_obj = paginator.page(page_number)
+    except (PageNotAnInteger, EmptyPage):
+        page_obj = paginator.page(1)
+    
+    context = {
+        'soil_analyses': page_obj,
+        'page_obj': page_obj,
+        'search_query': search_query,
+    }
+    
+    return render(request, 'arazi/soil_analysis_list.html', context)

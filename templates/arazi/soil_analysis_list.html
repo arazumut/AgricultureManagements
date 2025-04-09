@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Toprak Analizleri{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3">Toprak Analizleri</h1>
+            <p class="text-muted">Tüm parsellere ait toprak analizi kayıtları</p>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'arazi:land_list' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-arrow-left"></i> Arazilere Dön
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Tüm Toprak Analizleri</h5>
+            <!-- Arama ve filtreleme seçenekleri -->
+            <div>
+                <form method="get" class="d-flex">
+                    <input type="text" name="search" class="form-control me-2" placeholder="Analiz ara..." value="{{ search_query }}">
+                    <button type="submit" class="btn btn-outline-primary">Ara</button>
+                </form>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if soil_analyses %}
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Tarih</th>
+                                <th>Parsel</th>
+                                <th>Arazi</th>
+                                <th>pH</th>
+                                <th>Organik Madde</th>
+                                <th>Fosfor</th>
+                                <th>Potasyum</th>
+                                <th>Azot</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for analysis in soil_analyses %}
+                                <tr>
+                                    <td>{{ analysis.analysis_date|date:"d.m.Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'arazi:parcel_detail' land_id=analysis.parcel.land.id parcel_id=analysis.parcel.id %}">
+                                            {{ analysis.parcel.parcel_no }}
+                                        </a>
+                                    </td>
+                                    <td>{{ analysis.parcel.land.name }}</td>
+                                    <td>{{ analysis.ph_level }}</td>
+                                    <td>{{ analysis.organic_matter }}%</td>
+                                    <td>{{ analysis.phosphorus }} ppm</td>
+                                    <td>{{ analysis.potassium }} ppm</td>
+                                    <td>{{ analysis.nitrogen }} ppm</td>
+                                    <td>
+                                        <a href="#" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#analysisDetails{{ analysis.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Detay Modal -->
+                                <div class="modal fade" id="analysisDetails{{ analysis.id }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Toprak Analizi Detayları</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold">Temel Bilgiler</h6>
+                                                        <p><strong>Analiz Tarihi:</strong> {{ analysis.analysis_date|date:"d.m.Y" }}</p>
+                                                        <p><strong>Parsel:</strong> {{ analysis.parcel.parcel_no }}</p>
+                                                        <p><strong>Arazi:</strong> {{ analysis.parcel.land.name }}</p>
+                                                        <p><strong>Laboratuvar:</strong> {{ analysis.laboratory }}</p>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold">Analiz Sonuçları</h6>
+                                                        <p><strong>pH:</strong> {{ analysis.ph_level }}</p>
+                                                        <p><strong>Organik Madde:</strong> {{ analysis.organic_matter }}%</p>
+                                                        <p><strong>Fosfor (P):</strong> {{ analysis.phosphorus }} ppm</p>
+                                                        <p><strong>Potasyum (K):</strong> {{ analysis.potassium }} ppm</p>
+                                                        <p><strong>Azot (N):</strong> {{ analysis.nitrogen }} ppm</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                {% if analysis.calcium or analysis.magnesium or analysis.sulfur or analysis.zinc or analysis.iron or analysis.manganese or analysis.copper or analysis.boron %}
+                                                <hr>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold">İkincil Besinler</h6>
+                                                        {% if analysis.calcium %}<p><strong>Kalsiyum (Ca):</strong> {{ analysis.calcium }} ppm</p>{% endif %}
+                                                        {% if analysis.magnesium %}<p><strong>Magnezyum (Mg):</strong> {{ analysis.magnesium }} ppm</p>{% endif %}
+                                                        {% if analysis.sulfur %}<p><strong>Kükürt (S):</strong> {{ analysis.sulfur }} ppm</p>{% endif %}
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <h6 class="fw-bold">Mikro Besinler</h6>
+                                                        {% if analysis.zinc %}<p><strong>Çinko (Zn):</strong> {{ analysis.zinc }} ppm</p>{% endif %}
+                                                        {% if analysis.iron %}<p><strong>Demir (Fe):</strong> {{ analysis.iron }} ppm</p>{% endif %}
+                                                        {% if analysis.manganese %}<p><strong>Mangan (Mn):</strong> {{ analysis.manganese }} ppm</p>{% endif %}
+                                                        {% if analysis.copper %}<p><strong>Bakır (Cu):</strong> {{ analysis.copper }} ppm</p>{% endif %}
+                                                        {% if analysis.boron %}<p><strong>Bor (B):</strong> {{ analysis.boron }} ppm</p>{% endif %}
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if analysis.report_file %}
+                                                <hr>
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <h6 class="fw-bold">Rapor Dosyası</h6>
+                                                        <a href="{{ analysis.report_file.url }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                            <i class="fas fa-file-pdf"></i> Raporu Görüntüle
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if analysis.recommendations %}
+                                                <hr>
+                                                <div class="row">
+                                                    <div class="col">
+                                                        <h6 class="fw-bold">Öneriler</h6>
+                                                        <p>{{ analysis.recommendations }}</p>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="p-4 text-center">
+                    <p class="text-muted">Henüz toprak analizi kaydı bulunmamaktadır.</p>
+                    <p>Önce <a href="{% url 'arazi:land_list' %}">arazi listesine</a> giderek bir arazi seçip, parsel detaylarından toprak analizi ekleyebilirsiniz.</p>
+                </div>
+            {% endif %}
+        </div>
+        {% if soil_analyses %}
+        <div class="card-footer bg-white">
+            <nav aria-label="Sayfalama">
+                <ul class="pagination justify-content-center mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1">&laquo; İlk</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Önceki</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">&laquo; İlk</span></li>
+                        <li class="page-item disabled"><span class="page-link">Önceki</span></li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">Sayfa {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Sonraki</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Son &raquo;</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">Sonraki</span></li>
+                        <li class="page-item disabled"><span class="page-link">Son &raquo;</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 
